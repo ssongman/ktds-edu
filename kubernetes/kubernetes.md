@@ -1162,9 +1162,9 @@ No resources found in user01 namespace.
 
 ```sh
 
-$ cd ~/githubrepo/ds-edu
+$ cd ~/githubrepo/ktds-edu
 
-kubectl -n user01 create -f ~/githubrepo/ds-edu/userlist/
+$ kubectl -n user01 create -f ./kubernetes/userlist/11.userlist-deployment.yaml
 
 
 ```
