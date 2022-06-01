@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: curltest
+  labels:
+    app: curltest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: curltest
+  template:
+    metadata:
+      labels:
+        app: curltest
+    spec:
+      containers:
+      - name: main
+        image: curlimages/curl
+        command: ["sleep", "365d"]
