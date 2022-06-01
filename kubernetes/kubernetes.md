@@ -38,22 +38,6 @@
 
 
 
-![배포 혁명](kubernetes.assets/container_evolution.svg+xml)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 **전통적인 배포 시대:** 초기 조직은 애플리케이션을 물리 서버에서 실행했었다. 한 물리 서버에서 여러 애플리케이션의 리소스 한계를 정의할 방법이 없었기에, 리소스 할당의 문제가 발생했다. 예를 들어 물리 서버 하나에서 여러 애플리케이션을 실행하면, 리소스 전부를 차지하는 애플리케이션 인스턴스가 있을 수 있고, 결과적으로는 다른 애플리케이션의 성능이 저하될 수 있었다. 이에 대한 해결책은 서로 다른 여러 물리 서버에서 각 애플리케이션을 실행하는 것이 있다. 그러나 이는 리소스가 충분히 활용되지 않는다는 점에서 확장 가능하지 않았으므로, 물리 서버를 많이 유지하기 위해서 조직에게 많은 비용이 들었다.
 
 **가상화된 배포 시대:** 그 해결책으로 가상화가 도입되었다. 이는 단일 물리 서버의 CPU에서 여러 가상 시스템 (VM)을 실행할 수 있게 한다. 가상화를 사용하면 VM간에 애플리케이션을 격리하고 애플리케이션의 정보를 다른 애플리케이션에서 자유롭게 액세스 할 수 없으므로, 일정 수준의 보안성을 제공할 수 있다.
@@ -534,7 +518,7 @@ kubectl 명령과 각종 namespace 를 매번 입력하기가 번거롭다면 �
 
 ## 2) sample app deploy
 
-### (1) namespace
+### (1) Namespace
 
 
 
@@ -547,7 +531,7 @@ $ kubectl create ns song
 
 
 
-### (2) deployment
+### (2) Deployment
 
 - yaml 확인
 
@@ -727,7 +711,7 @@ curltest pod 내에서 수행한 결과가 동일함.
 
 
 
-### (3) service
+### (3) Service
 
 
 
@@ -931,7 +915,7 @@ Round Robin 방식은 클라이언트의 요청을 단순하게 들어온 순서
 
 
 
-### (6) ingress 
+### (6) Ingress 
 
 인그레스는 클러스터 내의 서비스에 대한 외부 접근을 관리하는 API 오브젝트이며, 일반적으로 HTTP를 관리한다.
 
@@ -1142,7 +1126,7 @@ $ kubectl get ns user01
 NAME     STATUS   AGE
 user01   Active   2m4s
 
-
+# ku 로 alias 선언
 $ alias ku='kubectl -n user01'
 
 $ ku get pod
@@ -1158,26 +1142,238 @@ No resources found in user01 namespace.
 
 
 
-### (1) deployment
+### (1) Deployment/Service
+
+- yaml 생성
 
 ```sh
-
 $ cd ~/githubrepo/ktds-edu
 
 $ kubectl -n user01 create -f ./kubernetes/userlist/11.userlist-deployment.yaml
+$ kubectl -n user01 create -f ./kubernetes/userlist/12.userlist-svc.yaml
 
 
+$ ku get deployment
+NAME       READY   UP-TO-DATE   AVAILABLE   AGE
+userlist   1/1     1            1           113s
+
+$ ku get pod
+NAME                       READY   STATUS    RESTARTS   AGE
+userlist-c78d76c78-r5bzs   1/1     Running   0          107s
+
+$ ku get svc
+NAME           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+userlist-svc   ClusterIP   10.43.2.174   <none>        80/TCP    9s
+
+
+```
+
+- 확인
+
+  userlist pod 내에 접근해서 테스트 시도
+
+```sh
+$ ku exec -it userlist-c78d76c78-r5bzs -- bash
+
+root@userlist-c78d76c78-r5bzs:/usr/src/app# curl userlist-svc/users/1
+{"id":1,"name":"Florian Reilly","gender":"F","image":"/assets/image/cat1.jpg"}
+
+```
+
+userlist-svc 라는 서비스명으로 접근이 잘 되는 것을 확인 할 수 있다.
+
+
+
+### (2) Scale Out
+
+- deployment 에서 replicas 조정
+
+```sh
+$  ku get deploy
+NAME       READY   UP-TO-DATE   AVAILABLE   AGE
+userlist   1/1     1            1           7m44s
+
+# de수정
+$ ku edit deploy userlist
+```
+
+- /userlist deployment yaml
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  creationTimestamp: "2022-06-01T12:29:07Z"
+  generation: 1
+  labels:
+    app: userlist
+  name: userlist
+  namespace: user01
+  resourceVersion: "28609"
+  uid: 06528a23-157f-4001-a2c8-f6a595996814
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1                     <--- 3으로 수정한다.
+  revisionHistoryLimit: 10 
+      ....
+```
+
+
+
+- 상태확인
+
+```sh
+$ ku get pod -w
+NAME                       READY   STATUS              RESTARTS   AGE
+userlist-c78d76c78-g6vmt   0/1     ContainerCreating   0          4s
+userlist-c78d76c78-gjkts   0/1     ContainerCreating   0          4s
+userlist-c78d76c78-r5bzs   1/1     Running             0          8m42s
+
+$ ku get pod
+NAME                       READY   STATUS    RESTARTS   AGE
+userlist-c78d76c78-g6vmt   1/1     Running   0          92s
+userlist-c78d76c78-gjkts   1/1     Running   0          92s
+userlist-c78d76c78-r5bzs   1/1     Running   0          10m
+```
+
+너무나 쉽게 replicas 3 으로 scale out 이 되었다.
+
+
+
+- userlist pod 내에서 테스트
+
+```sh
+$ ku exec -it userlist-c78d76c78-r5bzs -- bash
+
+
+$ while true; do curl userlist-svc/users/1; sleep 1; echo; done
+{"id":1,"name":"Albin Pollich V","gender":"F","image":"/assets/image/cat1.jpg"}
+{"id":1,"name":"Albin Pollich V","gender":"F","image":"/assets/image/cat1.jpg"}
+{"id":1,"name":"Lafayette Boyle","gender":"F","image":"/assets/image/cat1.jpg"}
+{"id":1,"name":"Lafayette Boyle","gender":"F","image":"/assets/image/cat1.jpg"}
+{"id":1,"name":"Albin Pollich V","gender":"F","image":"/assets/image/cat1.jpg"}
+{"id":1,"name":"Lafayette Boyle","gender":"F","image":"/assets/image/cat1.jpg"}
+{"id":1,"name":"Florian Reilly","gender":"F","image":"/assets/image/cat1.jpg"}
+{"id":1,"name":"Lafayette Boyle","gender":"F","image":"/assets/image/cat1.jpg"}
+{"id":1,"name":"Florian Reilly","gender":"F","image":"/assets/image/cat1.jpg"}
+{"id":1,"name":"Lafayette Boyle","gender":"F","image":"/assets/image/cat1.jpg"}
+{"id":1,"name":"Florian Reilly","gender":"F","image":"/assets/image/cat1.jpg"}
+{"id":1,"name":"Florian Reilly","gender":"F","image":"/assets/image/cat1.jpg"}
+...
 ```
 
 
 
 
 
-### (2) service
+### (3) Ingress 
 
-### (3) ingress 
 
-### (4) Scale Out
+
+- ingress controller 확인
+
+```sh
+$ kubectl -n kube-system get svc
+NAME             TYPE           CLUSTER-IP     EXTERNAL-IP                                                               PORT(S)                      AGE
+kube-dns         ClusterIP      10.43.0.10     <none>                                                                    53/UDP,53/TCP,9153/TCP       171m
+metrics-server   ClusterIP      10.43.144.31   <none>                                                                    443/TCP                      171m
+traefik          LoadBalancer   10.43.45.189   172.27.0.168,172.27.0.29,172.27.0.48,172.27.0.68,172.27.0.76,172.27.1.2   80:30070/TCP,443:31299/TCP   170m
+```
+
+30070 node port 로 접근 가능한 것을 알수 있다.
+
+이미 KT Cloud 에 공인 ip 가 할당되어 있으며 해당 IP 가 L4 역할을 수행한다.
+
+해당 공인 IP 와 위 traefik controller 의 node port가 서로 매핑되도록 설정작업을 해 놓았다.
+
+
+
+- master01 번과 port-forwarding 정보
+
+```
+211.254.212.105/80   =  master01/30070
+211.254.212.105/443  =  master01/31299
+```
+
+그러므로 우리는 211.254.212.105:80 으로 call 을 보내면 된다.  대신 Cluster 내 진입후 자신의 service 를 찾기 위한 host 를 같이 보내야 한다. 
+
+
+
+
+
+- 개인별 테스트를 위한 도메인 변경
+
+아래 16.userlist-ingress-ktcloud.yaml 파일을 오픈하여 user01 부분을 본인의 계정명으로 변경하자.
+
+```sh
+$ cd ~/githubrepo/ktds-edu
+
+$ ls -ltr ./kubernetes/userlist/
+total 5
+-rw-r--r-- 1 ssong 197609 376 6월   1 21:18 11.userlist-deployment.yaml
+-rw-r--r-- 1 ssong 197609 356 6월   1 21:18 10.curltest.yaml
+-rw-r--r-- 1 ssong 197609 382 6월   1 21:18 15.userlist-ingress-local.yaml
+-rw-r--r-- 1 ssong 197609 205 6월   1 21:18 12.userlist-svc.yaml
+-rw-r--r-- 1 ssong 197609 406 6월   1 21:48 16.userlist-ingress-ktcloud.yaml
+
+# ingress 수정
+$ vi ./kubernetes/userlist/16.userlist-ingress-ktcloud.yaml
+```
+
+
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: userlist-ingress
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+spec:
+  rules:
+  - host: "userlist.user01.ktcloud.211.254.212.105.nip.io"     <-- user01 을 적당한 이름으로 수정
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: userlist-svc
+            port:
+              number: 80
+
+```
+
+어떠한 이름으로 변경해도 상관없다.  예를 들어 아래 hostname 으로 상관없다. 다른 분들과 겹치지만 않게 하자.
+
+```
+userlist.user01.ktcloud.211.254.212.105.nip.io
+userlist.user07.ktcloud.211.254.212.105.nip.io
+userlist.songyangjong.ktcloud.211.254.212.105.nip.io
+```
+
+도메인 이름에 "*.nip.io" 가 포함된 것을 볼 수 있다.  이는 hostname 으로 특정 IP 를 찾기 위해서 임시로 사용하는 방식이다.
+
+Production 환경에서는 고유한 도메인이 발급되고 DNS 에 등록 후 사용해야 할 것이다.
+
+
+
+
+
+- ingress 생성
+
+```sh
+$ cd ~/githubrepo/ktds-edu
+
+$ kubectl -n user01 create -f ./kubernetes/userlist/16.userlist-ingress-ktcloud.yaml
+
+```
+
+
+
+
 
 
 
