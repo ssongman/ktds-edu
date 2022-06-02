@@ -86,22 +86,32 @@ ktds Container 기반 istio, argocd 교육자료
 - helm 설치
 - helm 을 이용한 Istio 설치
 - sample app sidecar inject
+  - userlist application을 활용하여 istio sidecar inject 에 대한 이해도를 높인다.
 
 
 
 ## 4) 실습(KT Cloud-기본)
 
 - sample app (bookinfo) install
+  - bookinfo application 을 활용한 실습을 통해서 istio 를 이해한다.
+  - bookinfo 는 온라인 서점의 단일 카탈로그 항목과 유사한 도서에 대한 정보를 표시하는 app 이다.
 - Monitoring
+  - Grafana
+  - Kiali
+  - Jaeger
 
 
 
 ## 5) 실습(KT Cloud-Traffic control)
 
 - Traffic Shifting
+  - 서비스별로 트래픽의 가중치를 조정하므로서 특정 버전에서 다른 버전으로 트래픽을 이동하는 방법을 제어할 수 있다.
 - Request Routing
+  - 여러 버전의 마이크로서비스로 동적으로 라우팅하는 방법을 확인할 수 있다.
 - Fault Injection
+  - application 의 복원력을 테스트하기 위해서 결함을 주입할 수 있다.
 - Circuit Breaking
+  - istio는 Connection pool 과   Load balancing pool 기반의 circuit breaking 기능을 제공한다.
 
 
 

@@ -997,7 +997,7 @@ http://jaeger.istio-system.ktcloud.211.254.212.105.nip.io
 
 ## 1) Traffic Shifting
 
-마이크로서비스의 한 버전에서 다른 버전으로 트래픽을 이동하는 방법을 제어할 수 있다.
+서비스별로 트래픽의 가중치를 조정하므로서 특정 버전에서 다른 버전으로 트래픽을 이동하는 방법을 제어할 수 있다.
 
 
 
@@ -1581,11 +1581,11 @@ $ ku delete -f 21.virtual-service-all-v1.yaml
 
 ## 4) Circuit Breaking
 
-connection pool, Request 시 이상값 감지에 대한 circuit breaking 을 살펴보자.
+istio 는 Connection pool 과   Load balancing pool 기반의 circuit breaking 기능을 제공한다.
 
 
 
-> Istio 는 *DestinationRule* 의 `.trafficPolicy.outlierDetection`, `.trafficPolicy.connectionPool` 스팩을 통해 *circuit breaking* 을 정의할 수 있으며 다음과 같이 2가지 유즈케이스를 가지고 있다.
+Istio 는 *DestinationRule* 의 `.trafficPolicy.outlierDetection`, `.trafficPolicy.connectionPool` 스팩을 통해 *circuit breaking* 을 정의할 수 있으며 다음과 같이 2가지 유즈케이스를 가지고 있다.
 
 - **첫번째**, Connection Max & Pending 수에 따른 *circuit break*
   - *service* 요청(upstream)에 대한 connection pool 을 정의한다.
