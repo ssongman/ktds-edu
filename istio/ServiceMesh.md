@@ -189,7 +189,7 @@ Istio의 보안 모델은 기본 보안을 기반으로 하며, 신뢰할 수 �
 
 
 
-# 3. Istio 실습(개인PC)
+# 3. 실습(개인PC)
 
 
 
@@ -589,7 +589,7 @@ $ ku delete -f ./kubernetes/userlist/15.userlist-ingress-local.yaml
 
 
 
-# 5. Istio 실습(KT Cloud)
+# 4. 실습(KT Cloud-기본)
 
 
 
@@ -991,7 +991,7 @@ http://jaeger.istio-system.ktcloud.211.254.212.105.nip.io
 
 
 
-# 6. Istio 실습 - Traffic control
+# 5. 실습(KT Cloud-Traffic control)
 
 
 
@@ -2077,7 +2077,7 @@ $ ku delete pod/hello-server-1 pod/hello-server-2 pod/httpbin service/svc-hello 
 
 
 
-# 9. 참고링크
+# 6. 참고링크
 
 https://istio.io/latest/docs/tasks/
 

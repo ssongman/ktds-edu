@@ -26,7 +26,7 @@ Kubernetes란 명칭은 키잡이(helmsman)나 파일럿을 뜻하는 그리스�
 
 
 
-## 2) 이전에는?
+## 2) k8s 이전에는?
 
 
 
@@ -355,9 +355,11 @@ http://localhost:8181/users/2
 
 
 
-Application 하나를 간단히 배포하였다. 
 
-하지만 부하가 너무 많아 한개의 container 만으로는 부족한 상황이다.
+
+## 2) Scale Out
+
+Application 하나를 간단히 배포하였다. 하지만 부하가 너무 많아 한개의 container 만으로는 부족한 상황이다.
 
 Scale Out 이 필요한 상황이다.  어떻게 해결할 것인가??
 
@@ -374,7 +376,7 @@ userlist1 번은 8181 이며 새롭게 실행한 2번째 app 은 8182 로 구분
 
 
 
-이전에 실행 userlist1 을 다시 확인해보자.
+이전에 실행 했던 userlist1 을 다시 확인해보자.
 
 ```sh
 $ curl http://localhost:8181/users/1
@@ -383,15 +385,15 @@ $ curl http://localhost:8181/users/1
 
 동일한 uri 인 users/1 을 호출했지만 접근 port 번호가 틀려서 서로다른 값이 호출되었다.
 
-userlist app 은 실행될때 10명의 사용자가 난수로 생성되도록 개발된 테스트용 app이다.
+userlist app 은 실행될때 10명의 사용자가 난수로 생성되도록 개발된 테스트용 app이다. 즉, 서로 다른 container 가 호출되었다.
 
 
 
-이렇게 두개의 App 을 실행되었다.  Client 가 두개의 App에 어떻게 접근해야 할까? 또한 부하분산을 어떻게 할까?
+## 3) 부하분산 고민
+
+Client 가 두개의 App에 어떻게 접근해야 할까? 또한 부하분산을 어떻게 할까?
 
 이런 문제를 해결하기 위해서는 load balancer 역할 수행하는 또다른 app 이 필요하다.
-
-
 
 아래 그림을 살펴보자.
 
@@ -423,8 +425,6 @@ backend testweb-backend
 
 결국 Container 기반의 시스템 구성은 아래와 같이 결론 내릴 수 있다.
 
-
-
 - 결론
 
   - 장점
@@ -447,7 +447,7 @@ backend testweb-backend
 
 
 
-## 2) clean up
+## 4) clean up
 
 ```sh
 $ docker rm -f userlist1 userlist2
