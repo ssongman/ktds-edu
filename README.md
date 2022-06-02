@@ -19,7 +19,6 @@ ktds Container 기반 istio, argocd 교육자료
 
 1. kubernetes 이론교육
    1. 
-
 2. k3s 실습(개인PC)
    1. wsl에 k3s 설치
    2. kubectl 명령 확인
@@ -27,15 +26,17 @@ ktds Container 기반 istio, argocd 교육자료
    4. ingress 접속 및 접속테스트
    5. Scale Out
 3. K3s 실습(KT Cloud)
-       1. 실습환경(KT Cloud) 설명
-          1. 개인 계정 login 설명
-       2. 개인 Namespace 에 userlist Run
-       3. Ingress 설정 및 접속테스트
-       4. Scale Out
-          1. docker 와의 차이점
-       5. traffic 흐름 이해
-          1. Round Robbin
-          2. Sticky Seession
+   1. 실습환경(KT Cloud) 설명
+      1. 개인 계정 login 설명
+   
+   2. 개인 Namespace 에 userlist Run
+   3. Ingress 설정 및 접속테스트
+   4. Scale Out
+      1. docker 와의 차이점
+   5. traffic 흐름 이해
+      1. Round Robbin
+      2. Sticky Seession
+   
 
 
 
@@ -98,11 +99,11 @@ ktds Container 기반 istio, argocd 교육자료
    3. K3s 실습(KT Cloud)
            1. 실습환경(KT Cloud) 설명
                  1. 개인 계정 login 설명
-           2. 개인 Namespace 에 userlist Run
-           3. Ingress 설정 및 접속테스트
-           4. Scale Out
+               2. 개인 Namespace 에 userlist Run
+               3. Ingress 설정 및 접속테스트
+               4. Scale Out
                  1. docker 와의 차이점
-           5. traffic 흐름 이해
+               5. traffic 흐름 이해
                  1. Round Robbin
                  2. Sticky Seession
 2. Class2: ServiceMesh - 3시간

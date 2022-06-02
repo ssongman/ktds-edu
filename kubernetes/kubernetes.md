@@ -419,7 +419,15 @@ userlist2
 
 # 4. k3s 실습(개인PC)
 
-## 1) wsl 에 k3s 설치
+## 1) k3s 란?
+
+to-be continue
+
+
+
+
+
+## 2) wsl 에 k3s 설치
 
 ### (1) master node - stand alone
 
@@ -510,7 +518,7 @@ kubectl 명령과 각종 namespace 를 매번 입력하기가 번거롭다면 �
 
 
 
-## 2) sample app deploy
+## 3) sample app deploy
 
 ### (1) Namespace
 
