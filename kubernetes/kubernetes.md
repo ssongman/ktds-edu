@@ -122,21 +122,50 @@ cmd > wsl -l -v
 
 실행하는 방법은 아래와 같이 다양하다. 본인이 편한 방법을 선택하자.
 
-- cmd 창에서 바로실행
-  - 위 command 창에서 wsl 명령을 입력하면 바로 default linux 가 실행된다.
+1. cmd 창에서 바로실행
+   - 위 command 창에서 wsl 명령을 입력하면 바로 default linux 가 실행된다.
 
 ![image-20220601193219422](kubernetes.assets/image-20220601193219422.png)
 
 
 
-- winterm 으로 실행하는 방법
-  - winterm 실행
-    - 위 화면과 동일
+2. winterm 으로 실행하는 방법
+   - winterm 실행
+   - 위 화면과 동일
 
-- mobaxterm 에서 실행
-  - session > WSL 실행
+3. mobaxterm 에서 실행
+   - session > WSL 실행
 
 ![image-20220601193859958](kubernetes.assets/image-20220601193859958.png)
+
+
+
+
+
+### (3) 교육자료 download
+
+테스트를 위해서 github 에서 교육 자료를 받아 놓자.
+
+```sh
+## githubrepo directory 생성
+$ mkdir ~/githubrepo
+
+$ cd ~/githubrepo
+
+$ git clone https://github.com/ssongman/ktds-edu.git
+Cloning into 'ktds-edu'...
+remote: Enumerating objects: 69, done.
+remote: Counting objects: 100% (69/69), done.
+remote: Compressing objects: 100% (55/55), done.
+remote: Total 69 (delta 15), reused 62 (delta 11), pack-reused 0
+Unpacking objects: 100% (69/69), 1.63 MiB | 4.09 MiB/s, done.
+
+$ ll ~/githubrepo
+total 12
+drwxrwxr-x  3 song song 4096 Jun  2 13:32 ./
+drwxr-xr-x 11 song song 4096 Jun  2 13:32 ../
+drwxrwxr-x  5 song song 4096 Jun  2 13:32 ktds-edu/
+```
 
 
 
@@ -251,21 +280,36 @@ KT Cloud에 VM 서버 하나를 생성하게 되면 다음과 같은 구조가 �
 
 
 
+### (3) 교육자료 download
 
-
-### (3) 개인별 환경설정
-
-테스트를 위해서 github 자료를 받아 놓자.
+테스트를 위해서 github 에서 교육 자료를 받아 놓자.
 
 ```sh
+## githubrepo directory 생성
 $ mkdir ~/githubrepo
 
 $ cd ~/githubrepo
 
-$ git clone github.com/ssongman/ds-edu
+$ git clone https://github.com/ssongman/ktds-edu.git
+Cloning into 'ktds-edu'...
+remote: Enumerating objects: 69, done.
+remote: Counting objects: 100% (69/69), done.
+remote: Compressing objects: 100% (55/55), done.
+remote: Total 69 (delta 15), reused 62 (delta 11), pack-reused 0
+Unpacking objects: 100% (69/69), 1.63 MiB | 4.09 MiB/s, done.
+
+$ ll ~/githubrepo
+total 12
+drwxrwxr-x  3 song song 4096 Jun  2 13:32 ./
+drwxr-xr-x 11 song song 4096 Jun  2 13:32 ../
+drwxrwxr-x  5 song song 4096 Jun  2 13:32 ktds-edu/
 
 $ cd ~/githubrepo/ds-edu
 ```
+
+
+
+
 
 
 
@@ -460,6 +504,35 @@ Client 와 Server Version 이 각각 보인다면 kubernetes cluster 에 연결�
 
 
 
+설치가 안된다면 아래와 수동설치를 진행해 보자.
+
+- 수동설치
+
+```sh
+
+# cluster 수동 기동
+$ sudo k3s server &
+…
+COMMIT 
+…
+
+# k3s 데몬 확인
+$ sudo ps -ef|grep k3s
+root         590     405  0 13:05 pts/0    00:00:00 sudo k3s server
+root         591     590 76 13:05 pts/0    00:00:26 k3s server
+root         626     591  5 13:05 pts/0    00:00:01 containerd -c /var/lib/rancher/k3s/agent/etc/containerd/config.toml -a /run/k3s/containerd/containerd.sock --state /run/k3s/containerd --root /var/lib/rancher/k3s/agent/containerd
+...
+
+$ sudo k3s kubectl version
+[sudo] password for song:
+Client Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.6+k3s1", GitCommit:"418c3fa858b69b12b9cefbcff0526f666a6236b9", GitTreeState:"clean", BuildDate:"2022-04-28T22:16:18Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.6+k3s1", GitCommit:"418c3fa858b69b12b9cefbcff0526f666a6236b9", GitTreeState:"clean", BuildDate:"2022-04-28T22:16:18Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
+```
+
+
+
+
+
 ### (2) kubeconfig 설정
 
 local 에서 직접 kubctl 명령 실행을 위해서는 ~/.kube/config 에 연결정보가 설정되어야 한다.
@@ -550,7 +623,10 @@ $ alias ku='kubectl -n user01'     <-- 자신의 namespace 명을 입력한다.
 
 - yaml 확인
 
-```yaml
+```sh
+$ cd ~/githubrepo/ktds-edu
+
+$ cat ./kubernetes/userlist/11.userlist-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -580,19 +656,15 @@ spec:
 - userlist deployment 생성
 
 ```sh
-$ ku create -f 11.userlist-deployment.yaml
+$ cd ~/githubrepo/ktds-edu
 
-$ ku get pod
-NAME                       READY   STATUS              RESTARTS   AGE
-userlist-c78d76c78-52s27   0/1     ContainerCreating   0          5s
-
-
-# 시간이 지나면 아래처럼 정상 기동됨
+$ ku create -f ./kubernetes/userlist/11.userlist-deployment.yaml
 
 $ ku get pod
 NAME                       READY   STATUS    RESTARTS   AGE
-userlist-c78d76c78-52s27   1/1     Running   0          112s
+userlist-c78d76c78-vz9dp   1/1     Running   0          4s
 
+# Status 가 Running 이 되어야 정상 기동된 상태임
 ```
 
 
@@ -600,10 +672,10 @@ userlist-c78d76c78-52s27   1/1     Running   0          112s
 - pod 내에서 확인
 
 ```sh
-$ ku exec -it userlist-c78d76c78-52s27 -- bash
+$ ku exec -it userlist-c78d76c78-vz9dp -- bash
 
-
-root@userlist-c78d76c78-52s27:/usr/src/app$ curl localhost:8181
+# userlist pod 내로 진입
+$ curl localhost:8181
 HTTP/1.1 200
 Content-Type: text/html;charset=UTF-8
 Content-Language: en
@@ -629,15 +701,12 @@ $ curl localhost:8181/users/1
 
 
 
-
-
-
-
 ### (3) curltest(test 목적 pod)
 
-cat > 10.curltest.yaml
+```sh
+$ cd ~/githubrepo/ktds-edu
 
-```yaml
+$ cat ./kubernetes/userlist/10.curltest.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -665,7 +734,9 @@ spec:
 - 확인
 
 ```sh
-$ ku create -f 10.curltest.yaml
+$ cd ~/githubrepo/ktds-edu
+
+$ ku create -f ./kubernetes/userlist/10.curltest.yaml
 
 
 $ ku get pod
@@ -686,15 +757,10 @@ curltest-564b75669d-gsfnb   1/1     Running       0          38s   10.42.0.11   
 - curltest pod 내에서 테스트
 
 ```sh
-
 $ ku exec -it curltest-564b75669d-gsfnb -- sh
 
 $ curl 10.42.0.9:8181/users/1
 {"id":1,"name":"Ms. Drake Murphy","gender":"F","image":"/assets/image/cat1.jpg"}
-
-$ curl 10.42.0.9:8181/users/2
-{"id":2,"name":"Jaida Cartwright","gender":"F","image":"/assets/image/cat2.jpg"}/
-
 ```
 
 
@@ -704,17 +770,13 @@ $ curl 10.42.0.9:8181/users/2
 ```sh
 $ ku exec -it curltest-564b75669d-gsfnb -- curl 10.42.0.9:8181/users/1
 {"id":1,"name":"Ms. Drake Murphy","gender":"F","image":"/assets/image/cat1.jpg"}
-
-$ ku exec -it curltest-564b75669d-gsfnb -- curl 10.42.0.9:8181/users/2
-{"id":2,"name":"Jaida Cartwright","gender":"F","image":"/assets/image/cat2.jpg"}/
-
 ```
 
 
 
-curltest pod 내에서 수행한 결과가 동일함.
+userlist pod 내에서 실행한 결과와 curltest pod 에서 실행한 결과, 그리고 local 에서 실행한  결과가 모두 동일하다.
 
-이유 설명....
+cluster 내에 내부 network 개념을 이해하는 중요한 예제이니 꼭 이해하자.
 
 
 
@@ -724,17 +786,16 @@ curltest pod 내에서 수행한 결과가 동일함.
 
 
 
-
-
 ### (3) Service
 
 
 
 - service 생성
 
-```yaml
-$ cat > 12.userlist-svc.yaml
----
+```sh
+$ cd ~/githubrepo/ktds-edu
+
+$ cat > ./kubernetes/userlist/12.userlist-svc.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -748,17 +809,13 @@ spec:
     port: 80
     targetPort: 8181
   type: ClusterIP
----
-
 ```
 
 
 
 ```sh
-$ ku create -f 12.userlist-svc.yaml
+$ ku create -f ./kubernetes/userlist/12.userlist-svc.yaml
 service/userlist-svc created
-
-
 ```
 
 
@@ -1041,6 +1098,8 @@ $ curl http://localhost:32423/users/1 -H "Host:userlist.songlab.co.kr"
 
 ### (7) clean up
 
+istio test 를 위해서 아직 삭제하지는 말자.
+
 ```sh
 $ cd ~/githubrepo/ktds-edu
 
@@ -1318,8 +1377,8 @@ traefik          LoadBalancer   10.43.45.189   172.27.0.168,172.27.0.29,172.27.0
 - master01 번과 port-forwarding 정보
 
 ```
-211.254.212.105/80   =  master01/30070
-211.254.212.105/443  =  master01/31299
+211.254.212.105:80   =  master01:30070
+211.254.212.105:443  =  master01:31299
 ```
 
 그러므로 우리는 211.254.212.105:80 으로 call 을 보내면 된다.  대신 Cluster 내 진입후 자신의 service 를 찾기 위한 host 를 같이 보내야 한다. 
