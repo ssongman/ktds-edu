@@ -17,14 +17,55 @@ ktds Container 기반 istio, argocd 교육자료
 
 
 
+## 1. Kubernetes 란 무엇인가?
+
+- k8s 개요
+
+- k8s 이전에는?
+
+- 왜 k8s 가 필요한가?
+
+
+
+
+
+## 2. 실습 환경 설명
+
+- mobaxterm
+- wsl
+- docker desktop 확인
+- KT Cloud 서버
+
+
+
+
+
+## 3. Docker 실습
+
+- sample app 실행
+- Scale Out
+- 부하분산 고민
+- clean up
+
+
+
+
+
+---
+
+
+
+
 
 ## 1. Kubernetes 란 무엇인가?
 
-### 1) 개요
+## 1) k8s 개요
 
-### 2) k8s 이전에는?
+## 2) k8s 이전에는?
 
-### 3) 왜 k8s 가 필요한가?
+## 3) 왜 k8s 가 필요한가?
+
+
 
 
 
