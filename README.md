@@ -1,10 +1,14 @@
-# ktds-edu
-ktds Container 기반 istio, argocd 교육자료
 
 
 
-# 서비스메쉬와 ArgoCD기반 CICD(6/13)
 
+# 서비스메쉬와 ArgoCD기반 CICD
+
+> ktds Container 기반 istio, argocd 교육자료
+
+본 교육은 Container를 기반으로 한 ServiceMesh(istio), argocd CICD 를 학습하는 과정으로 docker, kubernetes, istio, git, argocd, grafana, kiali, jeager 등 다양한 솔루션들에 대해서 알아보며 각각 실습을 수행한다.
+
+문의: 송양종( yj.song@kt.com / ssongmantop@gmail.com )
 
 
 
