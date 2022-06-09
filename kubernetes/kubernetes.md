@@ -173,7 +173,7 @@ drwxrwxr-x  5 song song 4096 Jun  2 13:32 ktds-edu/
 
 ## 3) docker desktop 확인
 
-Container 와 kubernetes 의 차이를 이해하기 위해서 간단한 container 배포 테스트를 진행할 계획이다.
+Container 와 kubernetes 의 차이를 이해하기 위해서 간단한 container 배포 테스트를 진행한다.
 
 
 
@@ -403,7 +403,202 @@ Client 가 두개의 App에 어떻게 접근해야 할까? 또한 부하분산�
 
 load balancer 역할을 수행할 haproxy 를 Application 앞단에 두고 client 가 이를 바라보게 하였다. 충분히 부하분산 역할 수행할 수 있다.
 
-하지만 haporxy container 를 별도로 관리해야 하고 application(userlist) 이 추가될때마다 haproxy 의 config 을 재구성해야 한다.
+
+
+### (1) 동일network 에서 container 실행
+
+위 그림과 같이 3개의 컨테이너를 각각 실행해 보자.
+
+
+
+- 기존 컨테이너 초기화
+
+```sh
+
+$ docker rm -f userlist1
+$ docker rm -f userlist2
+
+```
+
+
+
+- docker network 추가
+
+Docker 컨테이너(container)는 격리된 환경에서 돌아가기 때문에 기본적으로 다른 컨테이너와의 통신이 불가능하다. 하지만 여러 개의 컨테이너를 하나의 Docker 네트워크(network)에 연결시키면 서로 통신이 가능해진다.
+
+
+
+```sh
+# 네트워크에서 실행되도록 한다. 
+$ docker network create my_network
+
+$ docker network ls
+
+```
+
+
+
+- userlist 추가
+
+```sh
+
+# userlist1
+$ docker run -d --net my_network --name userlist1 -p 8181:8181 ssongman/userlist:v1
+
+$ curl http://localhost:8181/users/1
+{"id":1,"name":"Dr. Maudie Christiansen","gender":"F","image":"/assets/image/cat1.jpg"}
+
+
+
+
+
+# uesrlist2
+$ docker run -d --net my_network --name userlist2 -p 8182:8181 ssongman/userlist:v1
+
+$ curl http://localhost:8182/users/1
+{"id":1,"name":"Stefanie Mitchell","gender":"F","image":"/assets/image/cat1.jpg"}
+
+```
+
+
+
+
+
+
+
+### (3) haproxy 구성
+
+load balancer 역할로 haproxy 를 이용한다.
+
+- haproxy.cfg 구성
+
+haproxy는 첫 수행을 위해서는 반드시 haproxy.cfg 파일이 필요하다.
+
+```sh
+$ mkdir ~/haproxy
+
+$ cd ~/haproxy
+
+$ cat > haproxy.cfg
+global
+    log         127.0.0.1 local0
+    log         127.0.0.1 local1 notice
+    maxconn     4000
+
+defaults
+    balance roundrobin
+    log     global
+    mode    tcp
+    option  tcplog
+    option  redispatch
+    option  log-health-checks
+    retries 5
+    maxconn 3000
+    timeout connect 50s
+    timeout client  1m
+    timeout server  1m    
+
+listen stats
+    bind  *:1936
+    mode  http
+    stats enable
+    stats uri /stats
+    stats auth guest:guest
+    stats refresh 5s
+    
+listen web
+    bind    *:8180
+    mode    http
+    balance roundrobin
+    server  web1 userlist1:8181 check
+    server  web2 userlist2:8181 check
+
+#stats
+#  - haproxy 를 모니터할 수 있도록 설정한다.
+#  - [host_ip]:1936/stats 를 통해 접속하여 haproxy web ur 를 볼 수 있다.
+#  - auth 는 사용자ID / 사용자PW
+#
+#web
+#  - 8180 포트를 바인드한다.
+#  - 라운드로빈으로 밸런싱
+#  - web1, web2 의 헬스체크를 실행
+
+```
+
+
+
+- dockerize
+
+```sh
+$ cat > Dockerfile
+
+FROM haproxy:latest
+COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
+
+```
+
+
+
+```sh
+# docker build
+$ docker build -t my-haproxy .
+
+$ docker images
+REPOSITORY          TAG       IMAGE ID       CREATED         SIZE
+my-haproxy          latest    ddd9c9e2e161   5 seconds ago   102MB
+haproxy             latest    16377ca07cf6   6 days ago      102MB
+
+```
+
+
+
+- 실행
+
+```sh
+# 실행전 syntax 체크
+$ docker run -it --rm --name haproxy-syntax-check --net my_network my-haproxy haproxy -c -f /usr/local/etc/haproxy/haproxy.cfg
+Configuration file is valid
+
+
+# 실행
+$ docker run -d --net my_network --name my-haproxy -p 8180:8180 -p 1936:1936 my-haproxy
+
+```
+
+
+
+- 테스트
+
+```sh
+# userlist1 call
+$ curl localhost:8181/users/1
+{"id":1,"name":"Dr. Maudie Christiansen","gender":"F","image":"/assets/image/cat1.jpg"}
+
+
+
+
+# userlist2 call
+$ curl localhost:8182/users/1
+{"id":1,"name":"Stefanie Mitchell","gender":"F","image":"/assets/image/cat1.jpg"}
+
+
+
+
+# haproxy call
+$ curl localhost:8180/users/1
+
+$ while true; do curl localhost:8180/users/1; sleep 1; echo; done
+{"id":1,"name":"Dr. Maudie Christiansen","gender":"F","image":"/assets/image/cat1.jpg"}
+{"id":1,"name":"Stefanie Mitchell","gender":"F","image":"/assets/image/cat1.jpg"}
+{"id":1,"name":"Dr. Maudie Christiansen","gender":"F","image":"/assets/image/cat1.jpg"}
+{"id":1,"name":"Stefanie Mitchell","gender":"F","image":"/assets/image/cat1.jpg"}
+```
+
+
+
+### (9) 결론
+
+이와 같이 Container 환경에서의 scale out 은  load balancer container(like haporxy)를 별도로 관리해야 하고 application(userlist) 이 추가될때마다 haproxy 의 config 을 재구성해야 한다.
 
 - haproxy container 내의 config file 설정
 
@@ -450,9 +645,10 @@ backend testweb-backend
 ## 4) clean up
 
 ```sh
-$ docker rm -f userlist1 userlist2
-userlist1
-userlist2
+$ docker rm -f userlist1
+$ docker rm -f userlist2
+$ docker rm -f my-haproxy
+$ docker network rm my_network
 ```
 
 

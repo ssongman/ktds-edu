@@ -95,7 +95,7 @@ ArgoCD는 GitOps를 실현시키며 쿠버네티스에 배포까지 해주는 �
 
 
 
-### (1) create namespace
+### (1) Create namespace
 
 argocd 설치를 위한 namespace를 생성한다.
 
@@ -144,6 +144,34 @@ argocd-server-metrics                     ClusterIP   10.43.125.160   <none>    
 
 
 
+- tls disable 처리
+  - deployment 에서 command parameter 로 --insecure 처리
+
+```sh
+$ ka get deploy argocd-server -o yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-server
+  namespace: argocd
+...
+spec:
+  template:
+    metadata:
+    spec:
+      containers:
+      - command:
+        - argocd-server
+        - --insecure             <--- 삽입
+        env:
+...
+```
+
+
+
+
+
 ### (3) Service Expose
 
 기본적으로 Argo CD API 서버는 외부 IP로 노출되지 않는다. API 서버에 액세스하려면 다음 중 하나를 선택하여 Argo CD API 서버를 노출시킨다.
@@ -155,16 +183,53 @@ argocd-server-metrics                     ClusterIP   10.43.125.160   <none>    
 4) node port
 ```
 
-이중 가장 간단한 node port 방식으로 테스트 진행하도록 한다.
+이중 ingress / node port 방식을 알아보자.
 
-- service 를 ClusterIP type 에서 NodePort type 으로 변경
 
+
+- ingress 방식
+
+```sh
+
+$ ka apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-ingress
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+spec:
+  rules:
+  - host: "argocd.ktcloud.211.254.212.105.nip.io"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server
+            port:
+              name: http
+EOF
+
+
+
+
+
+## 확인
+$ curl http://argocd.ktcloud.211.254.212.105.nip.io/
+
+```
+
+
+
+- nodePort 방식
+  - service 를 ClusterIP type 에서 NodePort type 으로 변경
 
 
 ```sh
 
 $ ka edit svc argocd-server
-
 …
 spec:
   ...
@@ -174,26 +239,35 @@ spec:
     app.kubernetes.io/name: argocd-server
   type: ClusterIP                           <- ClusterIP --> NodePort 로 변경
 
+
 $ ka get svc
 NAME                                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
-argocd-applicationset-controller          ClusterIP   10.43.214.14    <none>        7000/TCP                     13m
-argocd-dex-server                         ClusterIP   10.43.237.245   <none>        5556/TCP,5557/TCP,5558/TCP   13m
-argocd-metrics                            ClusterIP   10.43.8.174     <none>        8082/TCP                     13m
-argocd-notifications-controller-metrics   ClusterIP   10.43.218.128   <none>        9001/TCP                     13m
-argocd-redis                              ClusterIP   10.43.218.182   <none>        6379/TCP                     13m
-argocd-repo-server                        ClusterIP   10.43.117.73    <none>        8081/TCP,8084/TCP            13m
-argocd-server-metrics                     ClusterIP   10.43.125.160   <none>        8083/TCP                     13m
-argocd-server                             NodePort    10.43.205.134   <none>        80:32429/TCP,443:30888/TCP   13m
+argocd-applicationset-controller          ClusterIP   10.43.202.220   <none>        7000/TCP                     12h
+argocd-dex-server                         ClusterIP   10.43.226.53    <none>        5556/TCP,5557/TCP,5558/TCP   12h
+argocd-metrics                            ClusterIP   10.43.62.76     <none>        8082/TCP                     12h
+argocd-notifications-controller-metrics   ClusterIP   10.43.136.143   <none>        9001/TCP                     12h
+argocd-redis                              ClusterIP   10.43.160.138   <none>        6379/TCP                     12h
+argocd-repo-server                        ClusterIP   10.43.53.80     <none>        8081/TCP,8084/TCP            12h
+argocd-server                             NodePort    10.43.18.82     <none>        80:30083/TCP,443:30121/TCP   12h
+argocd-server-metrics                     ClusterIP   10.43.228.225   <none>        8083/TCP                     12h
+
+
+## 확인
+$ curl localhost:30083/ -H "Host:argocd.ktcloud.211.254.212.105.nip.io"
 
 ```
 
-32429 node port 가 생성되었다.
+30083 node port 가 생성되었다.
+
+
 
 
 
 ### (4) ArgoCD-ui 접근
 
-http://localhost:32429
+http://localhost:30083
+
+http://argocd.ktcloud.211.254.212.105.nip.io/
 
 ![img](argocd.assets/argocd_login.png)
 
@@ -206,33 +280,34 @@ http://localhost:32429
 # 1) jsonpath 방식 
 $ ka get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 
-gbRGN8K2VCt2qPyf
+C7TBBBRxh4LcG28m
 
 
 # 2) yaml 방식
 $ ka -n argocd get secret argocd-initial-admin-secret -o yaml
 apiVersion: v1
 data:
-  password: Z2JSR044SzJWQ3QycVB5Zg==
+  password: QzdUQkJCUnhoNExjRzI4bQ==
 kind: Secret
 metadata:
-  creationTimestamp: "2022-06-08T13:52:09Z"
+  creationTimestamp: "2022-06-09T01:54:43Z"
   name: argocd-initial-admin-secret
   namespace: argocd
-  resourceVersion: "48686"
-  uid: 3f46c2fc-a46c-4548-9b94-41e230599f4b
+  resourceVersion: "329780"
+  uid: 1166305f-eb12-4312-83ec-5812547af738
 type: Opaque
 
 
-$ echo Z2JSR044SzJWQ3QycVB5Zg== | base64 --decode
-gbRGN8K2VCt2qPyf
+
+$ echo QzdUQkJCUnhoNExjRzI4bQ== | base64 --decode
+C7TBBBRxh4LcG28m
 ```
 
 
 
 ### (6) login
 
-admin / gbRGN8K2VCt2qPyf
+admin / C7TBBBRxh4LcG28m
 
 
 
@@ -272,7 +347,11 @@ $ mv ./argocd-linux-amd64 /usr/local/bin/argocd
 ### (2) ArgoCD Login
 
 ```sh
-$ argocd login localhost:32429
+$ argocd login localhost:30083
+
+or
+
+$ argocd login http://argocd.ktcloud.211.254.212.105.nip.io/
 Username: admin
 Password:
 'admin:login' logged in successfully
@@ -295,16 +374,17 @@ https://kubernetes.default.svc  in-cluster  1.23     Successful
 argocd account update-password --account <new-username> --new-password <new-password>
 
 
-$ argocd account update-password --account admin  --new-password admin1234!
+$ argocd account update-password --account admin  --new-password argo1234!
 *** Enter password of currently logged in user (admin):
 Password updated
 Context 'localhost:32429' updated
+
 
 ```
 
 
 
-### 
+
 
 
 
@@ -314,7 +394,7 @@ Context 'localhost:32429' updated
 
 ## 1) Creating Apps Via UI
 
-#### (1) App 생성
+### (1) App 생성
 
 - **+ New App**  버튼 클릭
 - GENERAL
@@ -332,7 +412,7 @@ Context 'localhost:32429' updated
 
 
 
-#### (2) 확인
+### (2) 확인
 
 ```sh
 $ ku get pod
@@ -352,22 +432,264 @@ guestbook-ui   ClusterIP   10.43.194.170   <none>        80/TCP    27s
 
 ### (3) clean up
 
-delete
+delete 버튼을 실행으로 해당 application 을 삭제할 수 있다.
 
 
 
-## 3) Creating Apps Via CLI 
+
+
+## 2) Creating Apps Via CLI 
 
 ### (1) Download CLI
 
 
 
+```sh
+$ wget https://github.com/argoproj/argo-cd/releases/download/v2.3.4/argocd-linux-amd64
+$ chmod +x argocd-linux-amd64
+$ mv ./argocd-linux-amd64 /usr/local/bin/argocd
+```
+
+
+
 ### (2) ArgoCD Login
+
+```sh
+$ argocd login localhost:30083
+
+or
+
+$ argocd login argocd.ktcloud.211.254.212.105.nip.io
+Username: admin
+Password:
+'admin:login' logged in successfully
+Context 'localhost:32429' updated
+
+
+$ argocd cluster list
+SERVER                          NAME        VERSION  STATUS      MESSAGE  PROJECT
+https://kubernetes.default.svc  in-cluster  1.23     Successful
+
+```
 
 
 
 ### (3) Creating Apps
 
+- guestbook
+
+```sh
+$ argocd app create guestbook-user02 \
+    --project default \
+    --repo https://github.com/argoproj/argocd-example-apps.git \
+    --path guestbook \
+    --dest-server https://kubernetes.default.svc \
+    --dest-namespace user02
+```
+
 
 
 ### (4) Deploy
+
+```sh
+$ argocd app sync guestbook-user01
+$ argocd app sync guestbook-user02
+```
+
+
+
+
+
+### (5) clean up
+
+```sh
+$ argocd app delete guestbook-user01
+$ argocd app delete guestbook-user02
+
+```
+
+
+
+## 3) rollout
+
+
+
+```sh
+
+$ k create namespace argo-rollouts
+$ k apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+
+
+```
+
+
+
+
+
+- clean up
+
+```sh
+
+# clean up
+$ k delete -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+
+
+```
+
+
+
+
+
+- Sample rollout
+
+```sh
+$ alias ku='kubectl -n user01'
+
+# Rollout
+$ ku apply -f - <<EOF
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: rollouts-demo
+spec:
+  replicas: 5
+  strategy:
+    canary:
+      steps:
+      - setWeight: 20
+      - pause: {}
+      - setWeight: 40
+      - pause: {duration: 10}
+      - setWeight: 60
+      - pause: {duration: 10}
+      - setWeight: 80
+      - pause: {duration: 10}
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: rollouts-demo
+  template:
+    metadata:
+      labels:
+        app: rollouts-demo
+    spec:
+      containers:
+      - name: rollouts-demo
+        image: argoproj/rollouts-demo:blue
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        resources:
+          requests:
+            memory: 32Mi
+            cpu: 5m
+EOF
+
+
+# service
+$ ku apply -f - <<EOF
+apiVersion: v1
+kind: Service
+metadata:
+  name: rollouts-demo
+spec:
+  ports:
+  - port: 80
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app: rollouts-demo
+EOF
+
+
+$ kubectl -n argo-rollouts patch svc rollouts-demo --patch \
+'{"spec": { "type": "NodePort", "ports": [ { "nodePort": 31080, "port": 80, "protocol": "TCP", "targetPort": "http", "name": "http" } ] } }'
+
+
+
+## ingress
+$ ku apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-rollouts-demo-ingress
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+spec:
+  rules:
+  - host: "argocd-rollouts-demo.ktcloud.211.254.212.105.nip.io"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server
+            port:
+              name: http
+EOF
+
+
+
+```
+
+
+
+
+
+- clean up
+
+```sh
+
+# clean up
+$ cd ~/argo-rollout-demo
+$ kar delete -f basic-rollout-blue.yaml
+$ kar delete -f basic-service.yaml
+$ ku delete ingress argocd-rollouts-demo-ingress
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
