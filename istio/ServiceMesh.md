@@ -304,11 +304,8 @@ istio/gateway                           1.13.4          1.13.4          Helm cha
 ### (2) create ns
 
 ```sh
-
 # 2. create ns
 $ k create namespace istio-system
-
-
 ```
 
 
@@ -861,6 +858,7 @@ $ curl -s "http://bookinfo.user01.ktcloud.211.254.212.105.nip.io/productpage" | 
 
 ```sh
 $ while true; do curl -s http://bookinfo.user01.ktcloud.211.254.212.105.nip.io/productpage | grep -o "<title>.*</title>"; sleep 0.5; echo; done
+
 ```
 
 while문으로 call유지 한채로 아래 monitoring 에서 kiali / jaeger / grafana 확인하자.
