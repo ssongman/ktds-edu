@@ -1797,7 +1797,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: httpbin
+  name: svc-httpbin
   labels:
     app: httpbin
 spec:
@@ -1916,6 +1916,7 @@ Kiali 에서는 아래와 같이 circuit break 뱃지가 나타난다.
 
 ```sh
 $ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 1 -qps 0 -n 10 -loglevel Warning http://httpbin:8000/get
+
 ...
 Code 200 : 10 (100.0 %)
 ...
@@ -1931,6 +1932,7 @@ Code 200 : 10 (100.0 %)
 
 ```sh
 $ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 2 -qps 0 -n 20 -loglevel Warning http://httpbin:8000/get
+
 ...
 Code 200 : 15 (75.0 %)
 Code 503 : 5 (25.0 %)
@@ -1947,6 +1949,7 @@ Code 503 : 5 (25.0 %)
 
 ```sh
 $ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 3 -qps 0 -n 30 -loglevel Warning http://httpbin:8000/get
+
 ...
 Code 200 : 14 (46.7 %)
 Code 503 : 16 (53.3 %)
@@ -1957,14 +1960,13 @@ Code 503 : 16 (53.3 %)
 
 
 
-
-
 - 아래와 같이 httpbin-dr를 삭제하고 circuit break 를 제거한 상태에서 동일한 트래픽 load 를 발생시키면 응답코드가 모두 200(정상) 임을 확인할 수 있다.
 
 ```sh
-$ ku delete -f ./istio/httpbin/13.httpbin-dr.yaml
+$ ku delete -f ./istio/httpbin/13.dr-httpbin.yaml
 
 $ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 3 -qps 0 -n 30 -loglevel Warning http://httpbin:8000/get
+
 ...
 Code 200 : 30 (100.0 %)
 ...
@@ -1990,8 +1992,8 @@ Code 200 : 30 (100.0 %)
 #### clean up
 
 ```sh
-$ ku delete pod/fortio deployment.apps/httpbin service/httpbin
-$ ku delete pod/curltest
+$ ku delete pod/fortio deployment.apps/httpbin svc/svc-httpbin
+
 ```
 
 
