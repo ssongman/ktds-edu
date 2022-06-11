@@ -1086,6 +1086,7 @@ $ cd ~/githubrepo/ktds-edu
 
 $ ku delete -f ./istio/bookinfo/11.bookinfo.yaml
 $ ku delete -f ./istio/bookinfo/12.bookinfo-gw-vs.yaml
+$ ku delete -f ./istio/bookinfo/13.destination-rule-all.yaml 
 $ kubectl -n istio-ingress delete -f ./istio/bookinfo/15.bookinfo-ingress.yaml
 
 
@@ -1149,16 +1150,33 @@ http://jaeger.istio-system.ktcloud.211.254.212.105.nip.io
 
 
 
+#### 초당 0.5회 call
+
+```sh
+$ while true; do curl -s http://bookinfo.user02.ktcloud.211.254.212.105.nip.io/productpage | grep -o "<title>.*</title>"; sleep 0.5; echo; done
+
+```
+
+위 while문 유지 하면서 monitoring (kiali / jaeger / grafana) 하면서 아래 traffic 실습을 진행하자.
+
+
+
+
+
+
+
 ## 1) Traffic Shifting
 
 서비스별로 트래픽의 가중치를 조정하므로서 특정 버전에서 다른 버전으로 트래픽을 이동하는 방법을 제어할 수 있다.
 
-
+kiali 를 확인하면서 아래를 진행해보자.
 
 - WBR(Weight-bassed routing) 적용
 
-```
-cat > 21.virtual-service-all-v1.yaml
+```sh
+$ cd ~/githubrepo/ktds-edu
+
+$ cat ./istio/bookinfo/21.virtual-service-all-v1.yaml
 
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -1213,16 +1231,19 @@ spec:
         subset: v1
 ---
 
-ku apply -f 21.virtual-service-all-v1.yaml
+$ ku apply -f ./istio/bookinfo/21.virtual-service-all-v1.yaml
 
 ```
+
+- 변화사항
+  - reviews 의 v2,v3호출 되지 않도록 라우팅 변경함.
 
 
 
  reviews 서비스의 v1, v3에 각각 50% 씩만 흘려보자.
 
 ```sh
-$ cat > 22.virtual-service-reviews-50-v3.yaml
+$ cat ./istio/bookinfo/22.virtual-service-reviews-50-v3.yaml
 
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -1242,7 +1263,7 @@ spec:
         subset: v3
       weight: 50
 
-$ ku apply -f 22.virtual-service-reviews-50-v3.yaml
+$ ku apply -f ./istio/bookinfo/22.virtual-service-reviews-50-v3.yaml
 
 ```
 
@@ -1251,7 +1272,7 @@ $ ku apply -f 22.virtual-service-reviews-50-v3.yaml
 reviews:v3 서비스가 안정적이라고 판단되면 아래virtualservice 적용하여 review:v3으로 100% 라우팅할 수 있다.
 
 ```sh
-$ cat > 23.virtual-service-reviews-v3.yaml
+$ cat ./istio/bookinfo/23.virtual-service-reviews-v3.yaml
 
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -1267,9 +1288,19 @@ spec:
         subset: v3
 
 
-$ ku apply -f 23.virtual-service-reviews-v3.yaml
+$ ku apply -f ./istio/bookinfo/23.virtual-service-reviews-v3.yaml
 
 ```
+
+- 변화사항
+
+  - Kiali 를 확인하면 v1로 흐르는 콜은 점점 작아지다가 사라지며
+  - v3으로 100% 흐르는 모습을 볼수 있다.
+
+- kiali UI 에서 직접 수정가능하다.
+
+  참조링크: https://istio.io/latest/docs/tasks/observability/kiali/
+
 
 
 
@@ -1277,16 +1308,8 @@ $ ku apply -f 23.virtual-service-reviews-v3.yaml
 
 ```sh
 # 한개의 파일만 clean up 한다.
-$ ku delete -f 21.virtual-service-all-v1.yaml
+$ ku delete -f ./istio/bookinfo/21.virtual-service-all-v1.yaml
 ```
-
-
-
-kiali UI 에서 직접 수정가능하다.
-
-참조링크: https://istio.io/latest/docs/tasks/observability/kiali/
-
-
 
 
 
@@ -1306,7 +1329,7 @@ reviews 서비스의 routing 을 변경해보면서 Kiali 를 집중 모니터�
 
 ```sh
 
-$ cat 21.virtual-service-all-v1.yaml
+$ cat ./istio/bookinfo/21.virtual-service-all-v1.yaml
 
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -1362,7 +1385,7 @@ spec:
 ---
 
 
-$ ku apply -f 21.virtual-service-all-v1.yaml
+$ ku apply -f ./istio/bookinfo/21.virtual-service-all-v1.yaml
 
 ```
 
@@ -1373,7 +1396,7 @@ $ ku apply -f 21.virtual-service-all-v1.yaml
 아래 경우 jason이라는 사용자의 모든 트래픽은 reviews:v2로 라우팅 되도록 설정한다.
 
 ```sh
-$ cat 24.virtual-service-reviews-test-v2.yaml
+$ cat ./istio/bookinfo/24.virtual-service-reviews-test-v2.yaml
 
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -1397,7 +1420,7 @@ spec:
         subset: v1
 
 
-$ ku apply -f 24.virtual-service-reviews-test-v2.yaml
+$ ku apply -f ./istio/bookinfo/24.virtual-service-reviews-test-v2.yaml
 
 ```
 
@@ -1434,10 +1457,10 @@ v2 를 운영환경에 배포한 다음 특정 사용자만 접속가능하게 �
 - clean up 
 
 ```sh
-$ ku delete -f 21.virtual-service-all-v1.yaml
+$ ku delete -f ./istio/bookinfo/21.virtual-service-all-v1.yaml
 ```
 
-위와 같이 virtualservice 를 삭제하게 되면 초기에 테스트 한것처럼 v1, v12, v3 가 RoundRobbin 으로 접속된다.
+위와 같이 virtualservice 를 삭제하게 되면 초기에 테스트 한것처럼 v1, v2, v3 가 RoundRobbin 으로 접속된다.
 
 
 
@@ -1458,17 +1481,21 @@ application 의 복원력을 테스트하기 위해서 결함을 주입할 수 �
 적절한 테스트를 위해서 바로 윗단계에서 테스트 한것처럼 jason 으로 로그인 시 v2 로 접속되며 그 외에는 v1 으로 접속되는 환경으로 변경한다.
 
 ```sh
-$ ku apply -f 21.virtual-service-all-v1.yaml
+$ ku apply -f ./istio/bookinfo/21.virtual-service-all-v1.yaml
 
-$ ku apply -f 24.virtual-service-reviews-test-v2.yaml
+$ ku apply -f ./istio/bookinfo/24.virtual-service-reviews-test-v2.yaml
 ```
 
 
 
 현재의 상태는 아래와 같다.
 
-- `productpage` → `reviews:v2` → `ratings` (only for user `jason`)
-- `productpage` → `reviews:v1` (for everyone else)
+- jason 로그인시
+  - `productpage` → `reviews:v2` → `ratings` 
+
+- jason 외
+  - `productpage` → `reviews:v1` 
+
 
 
 
@@ -1485,7 +1512,7 @@ reviews:v2 서비스에는 rating 서비스 호출시 10초 connection timeout �
 
 
 ```sh
-cat > 25.virtual-service-ratings-test-delay.yaml
+$ cat ./istio/bookinfo/25.virtual-service-ratings-test-delay.yaml
 
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -1513,7 +1540,7 @@ spec:
         host: ratings
         subset: v1
 
-$ ku apply -f 25.virtual-service-ratings-test-delay.yaml
+$ ku apply -f ./istio/bookinfo/25.virtual-service-ratings-test-delay.yaml
 ```
 
 위와 같이 적용후  jason 으로 접속 시도해 보자.
@@ -1552,7 +1579,7 @@ jason user 로 로그인시 http 500 를 리턴하도록 해보자.
 "Ratings service is currently unavailable" 라는 메세지가 나올것을 기대한다.
 
 ```sh
-$ cat > 26.virtual-service-ratings-test-abort.yaml
+$ cat ./istio/bookinfo/26.virtual-service-ratings-test-abort.yaml
 
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -1582,7 +1609,7 @@ spec:
 
 
 
-$ ku apply -f 26.virtual-service-ratings-test-abort.yaml
+$ ku apply -f ./istio/bookinfo/26.virtual-service-ratings-test-abort.yaml
 ```
 
 위를 적용하고 jason 으로 로그인해 보자.
@@ -1590,14 +1617,15 @@ $ ku apply -f 26.virtual-service-ratings-test-abort.yaml
 아래와 같은 메세지가 나오는 것을 확인할 수 있다.
 
 ```
-Book Reviews
-An extremely entertaining play by Shakespeare. The slapstick humour is refreshing!
+[Book Reviews]
 
+
+An extremely entertaining play by Shakespeare. The slapstick humour is refreshing!
 Reviewer1
 Ratings service is currently unavailable
 
-Absolutely fun and entertaining. The play lacks thematic depth when compared to other plays by Shakespeare.
 
+Absolutely fun and entertaining. The play lacks thematic depth when compared to other plays by Shakespeare.
 Reviewer2
 Ratings service is currently unavailable
 ```
@@ -1610,14 +1638,14 @@ jason 을 제외한 나머지 사용자는 잘 처리되는 것을 확인할 수
 
 ### (4) HTTP 중단 오류 inject (500 비율 조정)
 
-httpStatus: 500 error 의비율을 조정해 보자.
+httpStatus: 500 error 의 비율을 조정해 보자.
 
 
 
 ratings 서비스를 call 했을때 500 error 비율을 50 으로 설정해 보자.
 
 ```sh
-$ cat > 27.virtual-service-ratings-500-fi-rate.yaml
+$ cat ./istio/bookinfo/27.virtual-service-ratings-500-fi-rate.yaml
 
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -1638,7 +1666,7 @@ spec:
         subset: v1
 
 
-$ ku apply -f 27.virtual-service-ratings-500-fi-rate.yaml
+$ ku apply -f ./istio/bookinfo/27.virtual-service-ratings-500-fi-rate.yaml
 
 ```
 
@@ -1649,8 +1677,11 @@ $ ku apply -f 27.virtual-service-ratings-500-fi-rate.yaml
 
 
 ```sh
-# istio sidecar 가 inject된 pod에서 수행 ( userlist pod 에서)
-$ ku exec -it userlist-c78d76c78-jsj44 -- bash
+
+# istio sidecar 가 inject된 pod에서 수행 ( curltest pod 에서)
+$ ku run curltest --image=curlimages/curl -- sleep 365d
+
+$ ku exec -it curltest -- sh
 
 $ curl -i http://ratings:9080/ratings/0
 
@@ -1674,6 +1705,8 @@ HTTP/1.1 200 OK
 
 비율을 조정해보자.
 
+kiali 에서도 쉽게 조정이 가능하다.
+
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -1694,27 +1727,7 @@ spec:
         subset: v1
 ```
 
-
-
-참고로 kiali 에서도 쉽게 조정할 수 있다.
-
-http://kiali.istio-system.ktcloud.211.254.212.105.nip.io/kiali/console/namespaces/user01/istio/virtualservices/ratings
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+참고링크: http://kiali.istio-system.ktcloud.211.254.212.105.nip.io/kiali/console/namespaces/user01/istio/virtualservices/ratings
 
 
 
@@ -1723,10 +1736,6 @@ http://kiali.istio-system.ktcloud.211.254.212.105.nip.io/kiali/console/namespace
 ```sh
 $ ku delete -f 21.virtual-service-all-v1.yaml
 ```
-
-
-
-
 
 
 
@@ -1763,9 +1772,7 @@ circuit break 대상이 되는 httpbin 앱을 설치한다.  httpbin 은 HTTP �
 
 ```sh
 
-
-
-$ cat 11.httpbin-deploy-svc.yaml
+$ cat ./istio/httpbin/11.httpbin-deploy-svc.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1802,7 +1809,7 @@ spec:
     targetPort: 80
 
 
-$ ku apply -f 11.httpbin-deploy-svc.yaml
+$ ku apply -f ./istio/httpbin/11.httpbin-deploy-svc.yaml
 
 
 ```
@@ -1811,14 +1818,12 @@ $ ku apply -f 11.httpbin-deploy-svc.yaml
 
 #### fortio client 
 
-마이크로서비스 로드 테스트 툴인 fortio 을 설치한다.
+MSA 환경에서 로드 테스트 용도로 많이 사용하는 fortio 툴 을 설치한다.
 
 ```sh
 
+$ cat ./istio/httpbin/12.fortio-pod.yaml
 
-$ cat 12.fortio-pod.yaml
-
-$ ku apply -f - <<EOF
 apiVersion: v1
 kind: Pod
 metadata:
@@ -1836,7 +1841,7 @@ spec:
     - containerPort: 8079
       name: grpc-ping
 
-$ ku apply -f 12.fortio-pod.yaml
+$ ku apply -f ./istio/httpbin/12.fortio-pod.yaml
 
 ```
 
@@ -1847,7 +1852,7 @@ $ ku apply -f 12.fortio-pod.yaml
 fortio 에서 *httpbin* 으로 요청. **200(정상)** 응답 코드가 리턴됨.
 
 ```sh
-$ ku exec -it fortio  -c fortio -- /usr/bin/fortio curl  http://httpbin:8000/get
+$ ku exec -it fortio -c fortio -- /usr/bin/fortio curl  http://httpbin:8000/get
 HTTP/1.1 200 OK
 ...
 
@@ -1870,12 +1875,12 @@ Kiali 에서는 다음과 같이 조회된다.
 
 #### circuit breaker 설정
 
-DestinationRule 를 생성하여 circuit break 가 발생할 수 있도록 Connection pool을 최소값으로 지정한다.
-http1MaxPendingRequests=1 : Queue에서 onnection pool 에 연결을 기다리는 request 수를 1개로 제한한다.
-maxRequestsPerConnection=1 : keep alive 기능 disable 한다.
+- DestinationRule 를 생성하여 circuit break 가 발생할 수 있도록 Connection pool을 최소값으로 지정한다.
+- http1MaxPendingRequests=1 : Queue에서 onnection pool 에 연결을 기다리는 request 수를 1개로 제한한다.
+- maxRequestsPerConnection=1 : keep alive 기능 disable 한다.
 
 ```sh
-$ cat 13.httpbin-dr.yaml
+$ cat ./istio/httpbin/13.httpbin-dr.yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
@@ -1888,7 +1893,7 @@ spec:
         http1MaxPendingRequests: 1
         maxRequestsPerConnection: 1
 
-$ ku apply -f 13.httpbin-dr.yaml
+$ ku apply -f ./istio/httpbin/13.httpbin-dr.yaml
 
 
 ```
@@ -1905,9 +1910,9 @@ Kiali 에서는 아래와 같이 circuit break 뱃지가 나타난다.
 
 #### Tripping the circuit breaker
 
-- 비교를 위해 작은 양의 트래픽 load를 발생시킵니다.
+- 비교를 위해 작은 양의 트래픽 load를 발생시킨다.
   - 호출 10회
-  - 결과를 확인해보면 모두 응답코드 **200(정상)** 을 리턴 합니다.
+  - 결과를 확인해보면 모두 응답코드 **200(정상)** 을 리턴 한다.
 
 ```sh
 $ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 1 -qps 0 -n 10 -loglevel Warning http://httpbin:8000/get
@@ -1919,11 +1924,10 @@ Code 200 : 10 (100.0 %)
 
 
 
-- `-c 2` 옵션으로 동시 연결을 2로 늘려 트래픽 load를 발생 시킵니다.
-
-  - 연결당 호출 10회, 총 20회
-
-  - 결과를 확인해보면 응답코드 **503(오류)** 응답 코드가 5회 발생했습니다.
+- `-c 2` 옵션으로 동시 연결을 2로 늘려 트래픽 load를 발생 시킨다.
+- 연결당 호출 10회, 총 20회
+  
+- 결과를 확인해보면 응답코드 **503(오류)** 응답 코드가 5회 발생했다.
 
 ```sh
 $ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 2 -qps 0 -n 20 -loglevel Warning http://httpbin:8000/get
@@ -1936,11 +1940,10 @@ Code 503 : 5 (25.0 %)
 
 
 
-- `-c 3` 옵션으로 동시 연결을 3로 늘려 트래픽 load를 발생 시킵니다.
-
-  - 연결당 호출 10회, 총 30회
-
-  - 결과를 확인해보면 응답코드 **503(오류)** 응답 코드가 14회 발생했습니다.
+- `-c 3` 옵션으로 동시 연결을 3로 늘려 트래픽 load를 발생 시킨다.
+- 연결당 호출 10회, 총 30회
+  
+- 결과를 확인해보면 응답코드 **503(오류)** 응답 코드가 14회 발생했다.
 
 ```sh
 $ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 3 -qps 0 -n 30 -loglevel Warning http://httpbin:8000/get
@@ -1956,14 +1959,10 @@ Code 503 : 16 (53.3 %)
 
 
 
-
-
-
-
-- 아래와 같이 dr-httpbin를 삭제하고 circuit break 를 제거한 상태에서 동일한 트래픽 load 를 발생시키면 응답코드가 모두 200(정상) 임을 확인할 수 있습니다.
+- 아래와 같이 httpbin-dr를 삭제하고 circuit break 를 제거한 상태에서 동일한 트래픽 load 를 발생시키면 응답코드가 모두 200(정상) 임을 확인할 수 있다.
 
 ```sh
-$ ku delete -f 13.httpbin-dr.yaml
+$ ku delete -f ./istio/httpbin/13.httpbin-dr.yaml
 
 $ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 3 -qps 0 -n 30 -loglevel Warning http://httpbin:8000/get
 ...
@@ -1976,11 +1975,11 @@ Code 200 : 30 (100.0 %)
 
 #### 결론
 
-- istio 는 DestinationRule을 통해 *circuit break* 를 정의를 할 수 있습니다.
-- *k8s service* `svc-httpbin` 에 *DestionationRule* `dr-httpbin` 을 정의하여 connections 의 volume 1개, ending valume 1개로 제한하였습니다.
-- 1번 요청의 경우는 정상 요청처리 중입니다.
-- 2번 요청이 발생 했을때 1번 요청 처리 중이라면 2번 요청은 pending 상태가 됩니다.
-- 1,2번 요청이 처리,pending 상태에서 3번 요청이 발생하게 된다면 설정에 따라 *circuit break* 가 발생하게 됩니다.
+- istio 는 DestinationRule을 통해 *circuit break* 를 정의를 할 수 있다.
+- *k8s service* `svc-httpbin` 에 *DestionationRule* `dr-httpbin` 을 정의하여 connections 의 volume 1개, ending valume 1개로 제한하였다.
+- 1번 요청의 경우는 정상 요청처리 중이다.
+- 2번 요청이 발생 했을때 1번 요청 처리 중이라면 2번 요청은 pending 상태가 된다.
+- 1,2번 요청이 처리,pending 상태에서 3번 요청이 발생하게 된다면 설정에 따라 *circuit break* 가 발생하게 된다.
 
 
 
@@ -1992,9 +1991,8 @@ Code 200 : 30 (100.0 %)
 
 ```sh
 $ ku delete pod/fortio deployment.apps/httpbin service/httpbin
+$ ku delete pod/curltest
 ```
-
-
 
 
 
@@ -2004,12 +2002,11 @@ $ ku delete pod/fortio deployment.apps/httpbin service/httpbin
 
 ### (2) Load balancing pool의 인스턴스의 상태에 기반하는 *circuit break*
 
-n개의 인스턴스를 가지는 load balancing pool 중 오류 발생하거나 응답이 없는 인스턴스를 탐지하여 circuit break 를 작동시키는 방법입니다.
+n개의 인스턴스를 가지는 load balancing pool 중 오류 발생하거나 응답이 없는 인스턴스를 탐지하여 circuit break를 작동시키는 방법이다.
 
 - 전제 조건
-  - hello-server:latest 이미지는 env:RANDOM_ERROR 값의 확률로 랜덤하게 503 에러를 발생하는 로직이 포함되어 있습니다.
-  - 데모를 위해서 hello-server-1, hello-server-2 가 동일 workload 라고 가정합니다.
-- 기본 환경을 구성합니다.
+  - hello-server:latest 이미지는 env:RANDOM_ERROR 값의 확률로 랜덤하게 503 에러를 발생하는 로직이 포함되어 있다.
+  - 데모를 위해서 hello-server-1, hello-server-2 가 동일 workload 라고 가정한다.
 
 
 
@@ -2017,7 +2014,7 @@ n개의 인스턴스를 가지는 load balancing pool 중 오류 발생하거나
 
 ```sh
 
-$ cat 11.hello-pod-svc.yaml
+$ cat ./istio/hello/11.hello-pod-svc.yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -2069,37 +2066,27 @@ spec:
     port: 8080
 
 
-$ ku apply -f 11.hello-pod-svc.yaml
-
+$ ku apply -f ./istio/hello/11.hello-pod-svc.yaml
 
 ```
 
 
 
-- 클라이언트용 *pod* 를 설치합니다.
+- 클라이언트용 *pod* 를 설치한다.
 
 ```sh
-$ ku apply -f - <<EOF
-apiVersion: v1
-kind: Pod
-metadata:
-  name: httpbin
-  labels:
-    app: httpbin
-spec:
-  containers:
-  - name: httpbin
-    image: docker.io/honester/httpbin:latest
-    imagePullPolicy: IfNotPresent
-EOF
+$ ku run curltest --image=curlimages/curl -- sleep 365d
+
+$ ku run httpbin --image=docker.io/honester/httpbin:latest
+
 ```
 
-- httpbin 컨테이너에서 svc-hello 서비스로 요청합니다.
-  v1, v2 각각 5번씩 요쳥 결과가 조회됩니다.
+- curltest 컨테이너에서 svc-hello 서비스로 10개를 요청해 보자.
+  v1, v2 각각 5번씩 요청 결과가 조회된다.
 
 ```sh
-for i in {1..10}; do ku exec -it httpbin -c httpbin -- curl http://svc-hello:8080; sleep 0.1; done
 
+$ for i in {1..10}; do ku exec -it httpbin -- curl http://svc-hello:8080; sleep 0.1; done
 Hello server - v2
 Hello server - v2
 Hello server - v1
@@ -2112,32 +2099,47 @@ Hello server - v1
 Hello server - v2
 ```
 
-- 위와 같이 클라이언트 요청에 따라 에러가 리턴되지는 않았습니다
-- 하지만 실제로는 아래와 같이 `hello-server-2` *pod* 에서 내부 로직에 따라 20% 확률로 에러를 발생했고 이에 Kubernetes가 자동으로 재 요청했음을 알 수 있습니다.
-- 200(정상) 5회, 503(실패) 1회로 결국 클라이언트로 정상 전달된 5번이 실행되었음을 알 수 있습니다.
+- 위와 같이 클라이언트 요청에 따라 에러가 리턴되지는 않는다.
 
 
+
+- hello-server-1 로그
+
+```sh
+$ ku logs -f hello-server-1 -c hello-server-1
+
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+
+```
+
+200(정상) 6회이다.
+
+
+
+- hello-server-2 로그
 
 ```sh
 $ ku logs -f hello-server-2 -c hello-server-2
 
-Hello server - v2 - 200
-Hello server - v2 - 200
-Hello server - v2 - 200
-Hello server - v2 - 200
-Hello server - v2 - 200
-Hello server - v2 - 200
-Hello server - v2 - 200
-Hello server - v2 - 200
-Hello server - v2 - 200
 Hello server - v2 - 503 (random)
+Hello server - v2 - 200
+Hello server - v2 - 200
 Hello server - v2 - 200
 Hello server - v2 - 200
 ```
 
+내부 로직에 따라 20% 확률로 에러를 발생했고 200(정상) 4회, 503(실패) 1회 발생했다.
+
+1개의 call이 에러 발생하여 k8s 가 자동으로 server-1 로 재요청된 것을 알 수 있다.
 
 
-- Kiali 에서는 다음과 같이 조회됩니다.
+
+- Kiali 에서는 다음과 같이 조회된다.
 
 ![image-20220602214627686](ServiceMesh.assets/image-20220602214627686.png)
 
@@ -2147,15 +2149,13 @@ Hello server - v2 - 200
 
 #### Circuit breaker 설정
 
-- DestinationRule 를 생성 outlierDetection 스펙을 통해 circuit break 를 정의합니다.
+- DestinationRule 를 생성 outlierDetection 스펙을 통해 circuit break 를 정의한다.
   - 매 interval(1s)마다 스캔하여
   - 연속적으로 consecutiveErrors(1) 번 5XX 에러 가 발생하면
-  - baseEjectionTime(3m)동안 배제(circuit breaking) 처리됩니다.
-
-
+  - baseEjectionTime(3m)동안 배제(circuit breaking) 처리된다.
 
 ```sh
-$ cat 12.hello-dr.yaml
+$ cat ./istio/hello/12.hello-dr.yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
@@ -2170,17 +2170,43 @@ spec:
       maxEjectionPercent: 100
 
 
-$ ku apply -f 12.hello-dr.yaml
+$ ku apply -f ./istio/hello/12.hello-dr.yaml
 ```
 
 
 
-
-
-- hello-server-2 pod 의 logs 를 먼저 follow 하자.
+- hello-server-1 pod 의 logs follow 하자.
 
 ```sh
-$ ku logs -f hello-server-2 -c hello-server-2
+$ ku logs -f hello-server-1
+
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+Hello server - v1 - 200
+
+
+```
+
+
+
+- hello-server-2 pod 의 logs  follow 하자.
+
+```sh
+$ ku logs -f hello-server-2
 
 Hello server - v2 - 200
 Hello server - v2 - 200
@@ -2194,32 +2220,32 @@ Hello server - v2 - 503 (random)
 - 다시 동일한 요청을 하자. 이번에 20번 호출한다.
 
 ```sh
-for i in {1..20}; do ku exec -it httpbin -c httpbin -- curl http://svc-hello:8080; sleep 0.1; done
+$ for i in {1..20}; do ku exec -it httpbin -- curl http://svc-hello:8080; sleep 0.1; done
+Hello server - v2
+Hello server - v2
+Hello server - v1
+Hello server - v1
+Hello server - v1
+Hello server - v1
+Hello server - v2
+Hello server - v1 <-- 여기서 503을 반환받은 후 circuit breaker에 의해서 v1만 호출되는 모습을 볼수 있다.
+Hello server - v1
+Hello server - v1
+Hello server - v1
+Hello server - v1
+Hello server - v1
+Hello server - v1
+Hello server - v1
+Hello server - v1
+Hello server - v1
+Hello server - v1
+Hello server - v1
+Hello server - v1
 
-Hello server - v2
-Hello server - v2
-Hello server - v1
-Hello server - v1
-Hello server - v1
-Hello server - v2   <-- 여기서 503 을 반환받은 후 이후부터 circuit breaker 에 의해서 v1 만 호출되는 모습을 볼수 있다.
-Hello server - v1
-Hello server - v1
-Hello server - v1
-Hello server - v1
-Hello server - v1
-Hello server - v1
-Hello server - v1
-Hello server - v1
-Hello server - v1
-Hello server - v1
-Hello server - v1
-Hello server - v1
-Hello server - v1
-Hello server - v1
 
 ```
 
-- 결과는 v2 call 4번째 503을 받은 후  v1 결과 만을 리턴되는 것을 확인할 수 있습니다.
+- 결과는 v2 call 4번째 503을 받은 후  v1 결과 만을 리턴되는 것을 확인할 수 있다.
 
 
 
@@ -2245,12 +2271,13 @@ kiali 의 모습은 아래와 같다.
 ```sh
 ku delete pod/hello-server-1
 ku delete pod/hello-server-2
+ku delete svc/svc-hello
+ku delete dr/dr-hello
 ku delete pod/httpbin
-ku delete svc/hello-svc
-ku delete dr/hello-dr
+
+# 확인
+ku get all
 ```
-
-
 
 
 
@@ -2261,8 +2288,6 @@ ku delete dr/hello-dr
 https://istio.io/latest/docs/tasks/
 
 http://itnp.kr/post/istio-circuit-break
-
-
 
 
 

@@ -1,7 +1,5 @@
 
 
-
-
 # 서비스메쉬와 ArgoCD기반 CICD
 
 > ktds Container 기반 istio, argocd 교육자료
@@ -100,9 +98,7 @@
   - bookinfo application 을 활용한 실습을 통해서 istio 를 이해한다.
   - bookinfo 는 온라인 서점의 단일 카탈로그 항목과 유사한 도서에 대한 정보를 표시하는 app 이다.
 - Monitoring
-  - Grafana
-  - Kiali
-  - Jaeger
+  - Grafana / Kiali / Jaeger
 
 
 
@@ -129,27 +125,31 @@
 
 ## 1) GitOps
 
+- GitOps 개요 / 원칙 / 배포전략
 
 
-## 2) ArgoCD 이론
 
+## 2) ArgoCD 개요
 
+- Kubernetes를 위한 CD(Continuous Delivery)툴
+
+  
 
 ## 3) 실습(개인PC)
 
-- wsl 에 argocd 설치
-- ArgoCD Project 구성(sample app)
-- Sync 및 접속확인
+- WSL에 ArgoCD 설치
+- ArgoCD ingress 설정
+- ArgoCD CLI 설정
 
 
 
 ## 4) 실습(KT Cloud)
 
 - ArgoCD Project 구성(개인 NS에 userlist 배포)
-- 동일Project 구성
-- Sync 및 접속확인
-- rgo-rollout 테스트
-- app in apps pattern 테스트 ??
+- App 생성(ArgoCD UI에서)
+- App 생성(ArgoCD CLI 이용)
+- Deploy (Sync) 및 접속확인
+- Git repo와의 Sync 이해 (Scale Out 적용)
 
 
 

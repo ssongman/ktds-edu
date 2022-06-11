@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: hello-dr
+  name: dr-hello
 spec:
   host: svc-hello
   trafficPolicy:

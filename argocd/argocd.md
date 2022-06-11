@@ -106,8 +106,12 @@ $ kubectl get namespace
 ### (2) ArgoCD install
 
 ```sh
-$ kubectl apply -n argocd -f \
-    https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+$ cd ~/githubrepo/ktds-edu
+
+$ cat ./argocd/argocd-install/11.install.yaml
+
+$ kubectl apply -n argocd -f ./argocd/argocd-install/11.install.yaml
 
 $ alias ka='kubectl -n argocd'
 
@@ -179,43 +183,7 @@ spec:
 4) node port
 ```
 
-이중 ingress / node port 방식을 알아보자.
-
-
-
-- ingress 방식
-
-```sh
-
-$ ka apply -f - <<EOF
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: argocd-ingress
-  annotations:
-    kubernetes.io/ingress.class: "traefik"
-spec:
-  rules:
-  - host: "argocd.ktcloud.211.254.212.105.nip.io"
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: argocd-server
-            port:
-              name: http
-EOF
-
-
-
-
-
-## 확인
-$ curl http://argocd.ktcloud.211.254.212.105.nip.io/
-
-```
+이중 node port 방식을 알아보자.
 
 
 
@@ -249,7 +217,7 @@ argocd-server-metrics                     ClusterIP   10.43.228.225   <none>    
 
 
 ## 확인
-$ curl localhost:30083/ -H "Host:argocd.ktcloud.211.254.212.105.nip.io"
+$ curl localhost:30083/
 
 ```
 
@@ -262,8 +230,6 @@ $ curl localhost:30083/ -H "Host:argocd.ktcloud.211.254.212.105.nip.io"
 ### (4) ArgoCD-ui 접근
 
 http://localhost:30083
-
-http://argocd.ktcloud.211.254.212.105.nip.io/
 
 ![img](argocd.assets/argocd_login.png)
 
@@ -310,8 +276,9 @@ admin / C7TBBBRxh4LcG28m
 ### (7) clean up
 
 ```sh
-$ kubectl -n argocd delete -f \
-    https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+$ kubectl -n argocd delete -f ./argocd/argocd-install/11.install.yaml
+$ kubectl -n argocd delete -f ./argocd/argocd-install/12.argocd-ingress-local.yaml
+
 ```
 
 
@@ -344,10 +311,6 @@ $ mv ./argocd-linux-amd64 /usr/local/bin/argocd
 
 ```sh
 $ argocd login localhost:30083
-
-or
-
-$ argocd login http://argocd.ktcloud.211.254.212.105.nip.io/
 Username: admin
 Password:
 'admin:login' logged in successfully
@@ -373,7 +336,7 @@ argocd account update-password --account <new-username> --new-password <new-pass
 $ argocd account update-password --account admin  --new-password argo1234!
 *** Enter password of currently logged in user (admin):
 Password updated
-Context 'argocd.ktcloud.211.254.212.105.nip.io' updated
+Context 'localhost:30083' updated
 
 
 ```
@@ -392,11 +355,13 @@ Context 'argocd.ktcloud.211.254.212.105.nip.io' updated
 
 
 
-### (1) URL
+### (1) 접속정보
 
-http://argocd.ktcloud.211.254.212.105.nip.io/
+- URL
+  - http://argocd.ktcloud.211.254.212.105.nip.io/
 
-admin / ****
+- 계정정보
+  - admin / *************
 
 
 
