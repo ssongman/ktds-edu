@@ -1992,7 +1992,10 @@ Code 200 : 30 (100.0 %)
 #### clean up
 
 ```sh
-$ ku delete pod/fortio deployment.apps/httpbin svc/svc-httpbin
+$ 
+ku delete pod/fortio 
+ku delete deployment.apps/httpbin 
+ku delete svc/svc-httpbin
 
 ```
 
@@ -2077,8 +2080,6 @@ $ ku apply -f ./istio/hello/11.hello-pod-svc.yaml
 - 클라이언트용 *pod* 를 설치한다.
 
 ```sh
-$ ku run curltest --image=curlimages/curl -- sleep 365d
-
 $ ku run httpbin --image=docker.io/honester/httpbin:latest
 
 ```
