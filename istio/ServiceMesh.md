@@ -1880,11 +1880,11 @@ Kiali 에서는 다음과 같이 조회된다.
 - maxRequestsPerConnection=1 : keep alive 기능 disable 한다.
 
 ```sh
-$ cat ./istio/httpbin/13.httpbin-dr.yaml
+$ cat ./istio/httpbin/13.dr-httpbin.yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: httpbin-dr
+  name: dr-httpbin
 spec:
   host: httpbin
   trafficPolicy:
@@ -1893,7 +1893,7 @@ spec:
         http1MaxPendingRequests: 1
         maxRequestsPerConnection: 1
 
-$ ku apply -f ./istio/httpbin/13.httpbin-dr.yaml
+$ ku apply -f ./istio/httpbin/13.dr-httpbin.yaml
 
 
 ```

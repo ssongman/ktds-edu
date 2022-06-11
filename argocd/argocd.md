@@ -401,8 +401,6 @@ guestbook-ui   ClusterIP   10.43.194.170   <none>        80/TCP    27s
 
 
 
-
-
 ### (3) clean up
 
 delete 버튼을 실행으로 해당 application 을 삭제할 수 있다.
