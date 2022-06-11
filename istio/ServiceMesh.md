@@ -861,7 +861,7 @@ bookinfo host 를 각자 계정명으로 변경한후 적용하자.
 $ cd ~/githubrepo/ktds-edu
 
 # 12.bookinfo-gw-vs.yaml 파일 확인
-$ cat ./istio/bookinfo/12.bookinfo-gw-vs.yaml
+$ vi ./istio/bookinfo/12.bookinfo-gw-vs.yaml
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
@@ -932,12 +932,12 @@ bookinfo host 를 각자 계정명으로 변경한 후 적용하자.
 $ cd ~/githubrepo/ktds-edu
 
 # 15.bookinfo-ingress.yaml 파일 확인
-$ cat ./istio/bookinfo/15.bookinfo-ingress.yaml
+$ vi ./istio/bookinfo/15.bookinfo-ingress.yaml
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: bookinfo-ingress-user01          <-- 각자 계정명으로 변경 필요
+  name: bookinfo-ingress-user01                       <-- 각자 계정명으로 변경 필요
   namespace: istio-ingress
   annotations:
     kubernetes.io/ingress.class: "traefik"
@@ -956,13 +956,11 @@ spec:
 ---
 
 # ingress 는 istio-ingress namespace 에서 실행해야 한다.
-
-# istio-ingressgateway controller 존재하는 곳에 위치해야 한다.
 $ kubectl -n istio-ingress create -f ./istio/bookinfo/15.bookinfo-ingress.yaml
 
 
-
 ## 확인
+## user01 를 각자 계정명으로 변경 필요
 $ curl -s "http://bookinfo.user01.ktcloud.211.254.212.105.nip.io/productpage" | grep -o "<title>.*</title>"
 
 <title>Simple Bookstore App</title>    <-- 나오면 정상
@@ -972,30 +970,18 @@ $ curl -s "http://bookinfo.user01.ktcloud.211.254.212.105.nip.io/productpage" | 
 
 
 
-
+- 검증
 
 ```sh
-
-
 ## istio-ingress 검증
 $ curl localhost:31611/productpage -H "Host:bookinfo.user01.ktcloud.211.254.212.105.nip.io"
-
-<-- ok 합격
-
+<-- ok
 
 
-## istio-ingress 검증
-$ curl localhost:31611/productpage -H "Host:bookinfo.user01.ktcloud.211.254.212.105.nip.io"
-
-
-
+## ingress 검증
+$ curl localhost:30070/productpage -H "Host:bookinfo.user01.ktcloud.211.254.212.105.nip.io"
+<-- ok
 ```
-
-
-
-
-
-
 
 
 
@@ -1004,7 +990,7 @@ $ curl localhost:31611/productpage -H "Host:bookinfo.user01.ktcloud.211.254.212.
 #### 초당 0.5회 call 
 
 ```sh
-$ while true; do curl -s http://bookinfo.user01.ktcloud.211.254.212.105.nip.io/productpage | grep -o "<title>.*</title>"; sleep 0.5; echo; done
+$ while true; do curl -s http://bookinfo.user02.ktcloud.211.254.212.105.nip.io/productpage | grep -o "<title>.*</title>"; sleep 0.5; echo; done
 
 ```
 
@@ -1015,7 +1001,9 @@ while문으로 call유지 한채로 아래 monitoring 에서 kiali / jaeger / gr
 #### default destination rules
 
 ```sh
-cat > 13.destination-rule-all.yaml
+
+# 13.destination-rule-all.yaml 파일 확인
+$ cat ./istio/bookinfo/13.destination-rule-all.yaml
 
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
@@ -1080,6 +1068,11 @@ spec:
       version: v2
 ---
 
+
+# 적용
+$ ku apply -f ./istio/bookinfo/13.destination-rule-all.yaml
+
+
 ```
 
 
@@ -1096,7 +1089,7 @@ $ ku delete -f ./istio/bookinfo/12.bookinfo-gw-vs.yaml
 $ kubectl -n istio-ingress delete -f ./istio/bookinfo/15.bookinfo-ingress.yaml
 
 
-
+# 확인
 $ ku get all
 ```
 
@@ -1283,10 +1276,9 @@ $ ku apply -f 23.virtual-service-reviews-v3.yaml
 - clean up
 
 ```sh
+# 한개의 파일만 clean up 한다.
 $ ku delete -f 21.virtual-service-all-v1.yaml
 ```
-
-
 
 
 
@@ -1657,7 +1649,7 @@ $ ku apply -f 27.virtual-service-ratings-500-fi-rate.yaml
 
 
 ```sh
-# istio sidecar 가 inject 이 된 pod에서 수행 ( userlist pod 에서)
+# istio sidecar 가 inject된 pod에서 수행 ( userlist pod 에서)
 $ ku exec -it userlist-c78d76c78-jsj44 -- bash
 
 $ curl -i http://ratings:9080/ratings/0
@@ -1770,7 +1762,10 @@ Istio 는 *DestinationRule* 의 `.trafficPolicy.outlierDetection`, `.trafficPoli
 circuit break 대상이 되는 httpbin 앱을 설치한다.  httpbin 은 HTTP 프로토콜 echo 응답 앱이다.
 
 ```sh
-$ ku apply -f - <<EOF
+
+
+
+$ cat 11.httpbin-deploy-svc.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1805,7 +1800,11 @@ spec:
   - name: http
     port: 8000
     targetPort: 80
-EOF
+
+
+$ ku apply -f 11.httpbin-deploy-svc.yaml
+
+
 ```
 
 
@@ -1815,6 +1814,10 @@ EOF
 마이크로서비스 로드 테스트 툴인 fortio 을 설치한다.
 
 ```sh
+
+
+$ cat 12.fortio-pod.yaml
+
 $ ku apply -f - <<EOF
 apiVersion: v1
 kind: Pod
@@ -1832,7 +1835,9 @@ spec:
       name: http-fortio
     - containerPort: 8079
       name: grpc-ping
-EOF
+
+$ ku apply -f 12.fortio-pod.yaml
+
 ```
 
 
@@ -1870,7 +1875,7 @@ http1MaxPendingRequests=1 : Queue에서 onnection pool 에 연결을 기다리�
 maxRequestsPerConnection=1 : keep alive 기능 disable 한다.
 
 ```sh
-$ ku apply -f - <<EOF
+$ cat 13.httpbin-dr.yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
@@ -1882,7 +1887,9 @@ spec:
       http:
         http1MaxPendingRequests: 1
         maxRequestsPerConnection: 1
-EOF
+
+$ ku apply -f 13.httpbin-dr.yaml
+
 
 ```
 
@@ -1956,7 +1963,7 @@ Code 503 : 16 (53.3 %)
 - 아래와 같이 dr-httpbin를 삭제하고 circuit break 를 제거한 상태에서 동일한 트래픽 load 를 발생시키면 응답코드가 모두 200(정상) 임을 확인할 수 있습니다.
 
 ```sh
-$ ku delete dr httpbin-dr
+$ ku delete -f 13.httpbin-dr.yaml
 
 $ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 3 -qps 0 -n 30 -loglevel Warning http://httpbin:8000/get
 ...
@@ -1983,7 +1990,7 @@ Code 200 : 30 (100.0 %)
 
 #### clean up
 
-```
+```sh
 $ ku delete pod/fortio deployment.apps/httpbin service/httpbin
 ```
 
@@ -2009,7 +2016,8 @@ n개의 인스턴스를 가지는 load balancing pool 중 오류 발생하거나
 #### 기본 환경을 구성
 
 ```sh
-$ ku apply -f - <<EOF
+
+$ cat 11.hello-pod-svc.yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -2059,7 +2067,11 @@ spec:
   - name: http
     protocol: TCP
     port: 8080
-EOF
+
+
+$ ku apply -f 11.hello-pod-svc.yaml
+
+
 ```
 
 
@@ -2143,11 +2155,11 @@ Hello server - v2 - 200
 
 
 ```sh
-$ ku apply -f - <<EOF
+$ cat 12.hello-dr.yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: dr-hello
+  name: hello-dr
 spec:
   host: svc-hello
   trafficPolicy:
@@ -2156,7 +2168,9 @@ spec:
       consecutive5xxErrors: 1
       baseEjectionTime: 3m
       maxEjectionPercent: 100
-EOF
+
+
+$ ku apply -f 12.hello-dr.yaml
 ```
 
 
@@ -2229,7 +2243,11 @@ kiali 의 모습은 아래와 같다.
 #### clean up
 
 ```sh
-$ ku delete pod/hello-server-1 pod/hello-server-2 pod/httpbin service/svc-hello dr/dr-hello
+ku delete pod/hello-server-1
+ku delete pod/hello-server-2
+ku delete pod/httpbin
+ku delete svc/hello-svc
+ku delete dr/hello-dr
 ```
 
 
