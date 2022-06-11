@@ -8,9 +8,9 @@ spec:
   ports:
   - name: http
     protocol: TCP
-    port: 8181
+    port: 80
     targetPort: 8181
-  #type: ClusterIP        ## default
+  type: ClusterIP        ## default
   #type: LoadBalancer
-  type: NodePort
+  #type: NodePort
   #loadBalancerIP: ""
