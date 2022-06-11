@@ -15,4 +15,4 @@ spec:
           service:
             name: userlist-svc
             port:
-              number: 8181
+              number: 80

@@ -528,7 +528,7 @@ $ argocd app delete guestbook-user02
 ```sh
 $ argocd app create userlist-user01 \
     --project default \
-    --repo https://github.com/ssongman/userlist.git \
+    --repo https://github.com/ssongman/ktds-edu.git \
     --path argocd/userlist \
     --dest-server https://kubernetes.default.svc \
     --dest-namespace user01
