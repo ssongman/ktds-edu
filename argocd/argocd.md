@@ -392,13 +392,27 @@ Context 'localhost:32429' updated
 
 
 
-## 1) Creating Apps Via UI
+## 1) ArgoCD UI 접속
+
+
+
+### (1) URL
+
+http://argocd.ktcloud.211.254.212.105.nip.io/
+
+admin / ****
+
+
+
+
+
+## 2) Creating Apps Via UI
 
 ### (1) App 생성
 
 - **+ New App**  버튼 클릭
 - GENERAL
-  - Application Name : guestbook
+  - Application Name : guestbook-user01        <-- user01을 자기 NS 로 변경필요
   - Project : default
   - SYNC POLICY : Manual
 - SOURCE
@@ -407,7 +421,7 @@ Context 'localhost:32429' updated
   - Path : guestbook
 - DESTINATION
   - cluster : https://kubernetes.default.svc
-  - Namespace : user01
+  - Namespace : user01        <-- user01을 자기 NS 로 변경필요
 - Create 버튼 클릭
 
 
@@ -438,11 +452,11 @@ delete 버튼을 실행으로 해당 application 을 삭제할 수 있다.
 
 
 
-## 2) Creating Apps Via CLI 
+## 3) Creating Apps Via CLI 
 
 ### (1) Download CLI
 
-
+root 권한으로 수행필요
 
 ```sh
 $ wget https://github.com/argoproj/argo-cd/releases/download/v2.3.4/argocd-linux-amd64
@@ -455,10 +469,6 @@ $ mv ./argocd-linux-amd64 /usr/local/bin/argocd
 ### (2) ArgoCD Login
 
 ```sh
-$ argocd login localhost:30083
-
-or
-
 $ argocd login argocd.ktcloud.211.254.212.105.nip.io
 Username: admin
 Password:
@@ -498,19 +508,65 @@ $ argocd app sync guestbook-user02
 
 
 
-
-
 ### (5) clean up
 
 ```sh
 $ argocd app delete guestbook-user01
 $ argocd app delete guestbook-user02
-
 ```
 
 
 
-## 3) rollout
+
+
+## 4) Creating Userlist
+
+
+
+### (1) Creating Apps
+
+```sh
+$ argocd app create userlist-user01 \
+    --project default \
+    --repo https://github.com/ssongman/userlist.git \
+    --path k8s_istio_yaml/k8s \
+    --dest-server https://kubernetes.default.svc \
+    --dest-namespace user01
+```
+
+
+
+### (2) Deploy
+
+```sh
+$ argocd app sync guestbook-user01
+$ argocd app sync guestbook-user02
+```
+
+
+
+### (3) clean up
+
+```sh
+$ argocd app delete guestbook-user01
+$ argocd app delete guestbook-user02
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 9) rollout
 
 
 
@@ -529,10 +585,8 @@ $ k apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases
 - clean up
 
 ```sh
-
 # clean up
 $ k delete -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
-
 
 ```
 
@@ -626,11 +680,12 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: argocd-server
+            name: rollouts-demo
             port:
               name: http
 EOF
 
+$ ku argo rollouts get rollout rollouts-demo
 
 
 ```
@@ -644,9 +699,8 @@ EOF
 ```sh
 
 # clean up
-$ cd ~/argo-rollout-demo
-$ kar delete -f basic-rollout-blue.yaml
-$ kar delete -f basic-service.yaml
+$ ku delete Rollout rollouts-demo
+$ ku delete svc rollouts-demo
 $ ku delete ingress argocd-rollouts-demo-ingress
 
 ```
