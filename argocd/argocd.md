@@ -12,7 +12,7 @@ GitOps는 DevOps의 실천 방법 중 하나로 애플리케이션의 배포와 
 
 [![img](https://github.com/ssongman/edu/raw/master/assets/gitops_overview.png)](https://github.com/ssongman/edu/blob/master/assets/gitops_overview.png)
 
-아주 간단하게 말해서 GitOps는 Kubernetes Manifest파일을 Git에서 관리하고, 배포할때에도 Git에 저장된 Manifest로 클러스터에 배포하는 일련의 과정들을 의미한다.
+간단하게 말해서 GitOps는 Kubernetes Manifest파일을 Git에서 관리하고, 배포할때에도 Git에 저장된 Manifest로 클러스터에 배포하는 일련의 과정들을 의미한다.
 
 
 
@@ -81,13 +81,7 @@ ArgoCD는 GitOps를 실현시키며 쿠버네티스에 배포까지 해주는 �
 
 
 
-
-
-
-
 # 3. 실습(개인PC)
-
-
 
 
 
@@ -101,6 +95,8 @@ argocd 설치를 위한 namespace를 생성한다.
 
 ```sh
 $ kubectl create namespace argocd
+
+$ kubectl get namespace
 ```
 
 
@@ -377,7 +373,7 @@ argocd account update-password --account <new-username> --new-password <new-pass
 $ argocd account update-password --account admin  --new-password argo1234!
 *** Enter password of currently logged in user (admin):
 Password updated
-Context 'localhost:32429' updated
+Context 'argocd.ktcloud.211.254.212.105.nip.io' updated
 
 
 ```
@@ -401,8 +397,6 @@ Context 'localhost:32429' updated
 http://argocd.ktcloud.211.254.212.105.nip.io/
 
 admin / ****
-
-
 
 
 
@@ -531,179 +525,205 @@ $ argocd app create userlist-user01 \
     --repo https://github.com/ssongman/ktds-edu.git \
     --path argocd/userlist \
     --dest-server https://kubernetes.default.svc \
-    --dest-namespace user01
+    --dest-namespace user01 \
+    --grpc-web
+
+$ argocd app create userlist-user02 \
+    --project default \
+    --repo https://github.com/ssongman/ktds-edu.git \
+    --path argocd/userlist \
+    --dest-server https://kubernetes.default.svc \
+    --dest-namespace user02 \
+    --grpc-web
+```
+
+- user01 을 본인 namespace 로 변경 필요
+
+
+
+### (2) Deploy(Sync)
+
+```sh
+$ ku get pod -w
+
+$ argocd app sync userlist-user01 --grpc-web
+$ argocd app sync userlist-user02 --grpc-web
 ```
 
 
 
-### (2) Deploy
+### (3) 동일한 ingress host 충돌 이슈
+
+user01 에서 user20 깢 다양한 namespace 에서동일한 github repo 의 동일한 yaml을 이용해서 생성되었다.
+
+namespace 는 각자 수정해서 달라졌겠지만 ingress 는 host 는 모두 동일한 이름으로 배포가 되었다.
+
+동일한 ingress host 를 중복해서 생성하게 되면 마지막에 생성한 ingress host 가 유효하게 된다.
+
+그러므로 ingress host 는 클러스터 내에서 유일하게 설정해야 한다는 점을 유의하자.
+
+ArgoCD UI 에서 ingress 주소를 각자 주소로 현행화 해보자.
+
+- ingress update
 
 ```sh
-$ argocd app sync guestbook-user01
-$ argocd app sync guestbook-user02
-```
+# 1 위치
+userlist-user02 > userlist-ingress > EDIT
 
-
-
-### (3) clean up
-
-```sh
-$ argocd app delete guestbook-user01
-$ argocd app delete guestbook-user02
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## 9) rollout
-
-
-
-```sh
-
-$ k create namespace argo-rollouts
-$ k apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
-
-
-```
-
-
-
-
-
-- clean up
-
-```sh
-# clean up
-$ k delete -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
-
-```
-
-
-
-
-
-- Sample rollout
-
-```sh
-$ alias ku='kubectl -n user01'
-
-# Rollout
-$ ku apply -f - <<EOF
-apiVersion: argoproj.io/v1alpha1
-kind: Rollout
-metadata:
-  name: rollouts-demo
-spec:
-  replicas: 5
-  strategy:
-    canary:
-      steps:
-      - setWeight: 20
-      - pause: {}
-      - setWeight: 40
-      - pause: {duration: 10}
-      - setWeight: 60
-      - pause: {duration: 10}
-      - setWeight: 80
-      - pause: {duration: 10}
-  revisionHistoryLimit: 2
-  selector:
-    matchLabels:
-      app: rollouts-demo
-  template:
-    metadata:
-      labels:
-        app: rollouts-demo
-    spec:
-      containers:
-      - name: rollouts-demo
-        image: argoproj/rollouts-demo:blue
-        ports:
-        - name: http
-          containerPort: 8080
-          protocol: TCP
-        resources:
-          requests:
-            memory: 32Mi
-            cpu: 5m
-EOF
-
-
-# service
-$ ku apply -f - <<EOF
-apiVersion: v1
-kind: Service
-metadata:
-  name: rollouts-demo
-spec:
-  ports:
-  - port: 80
-    targetPort: http
-    protocol: TCP
-    name: http
-  selector:
-    app: rollouts-demo
-EOF
-
-
-$ kubectl -n argo-rollouts patch svc rollouts-demo --patch \
-'{"spec": { "type": "NodePort", "ports": [ { "nodePort": 31080, "port": 80, "protocol": "TCP", "targetPort": "http", "name": "http" } ] } }'
-
-
-
-## ingress
-$ ku apply -f - <<EOF
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: argocd-rollouts-demo-ingress
-  annotations:
-    kubernetes.io/ingress.class: "traefik"
+# 2) host 수정
+...
 spec:
   rules:
-  - host: "argocd-rollouts-demo.ktcloud.211.254.212.105.nip.io"
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: rollouts-demo
-            port:
-              name: http
-EOF
+    - host: userlist-user01.ktcloud.211.254.212.105.nip.io      <-- 수정
+      http:
+...
 
-$ ku argo rollouts get rollout rollouts-demo
-
-
+# 3) save
+# save 이후 바로 cluster 에 반영된다.
 ```
 
+이제 크롬 브라우저에서  각자 host(userlist-user01.ktcloud.211.254.212.105.nip.io) 로 접근해 보자.
 
 
 
+- 참고
 
-- clean up
+user01, user02 namespace 에 존재하는 userlist 서비스 확인하는 방법
 
 ```sh
+# 클러스터 내부 network 을 이용해야 하므로 특정 pod 내부에서 curl 실행하자.
+$ ku get pod
+NAME                              READY   STATUS    RESTARTS       AGE
+userlist-67567d59d5-xwg2k         2/2     Running   0              5m16s
 
-# clean up
-$ ku delete Rollout rollouts-demo
-$ ku delete svc rollouts-demo
-$ ku delete ingress argocd-rollouts-demo-ingress
+$ ku exec -it userlist-67567d59d5-xwg2k -c userlist -- curl userlist-svc.user01.svc/users/1
+{"id":1,"name":"Dr. Lorenzo Roob","gender":"F","image":"/assets/image/cat1.jpg"}
+
+$ ku exec -it userlist-67567d59d5-xwg2k -c userlist -- curl userlist-svc.user02.svc/users/1
+{"id":1,"name":"Colleen McLaughlin","gender":"F","image":"/assets/image/cat1.jpg"}
+
+
+$ curl http://userlist-user01.ktcloud.211.254.212.105.nip.io/users/1
+{"id":1,"name":"Dayana Bergstrom","gender":"F","image":"/assets/image/cat1.jpg"}
+
+$ curl http://userlist-user02.ktcloud.211.254.212.105.nip.io/users/1
+{"id":1,"name":"Colleen McLaughlin","gender":"F","image":"/assets/image/cat1.jpg"}
 
 ```
+
+
+
+
+
+### (4) Scale out 1
+
+github 의 아래 deployment 에서 replicas 를 증가 시켜 보자.
+
+> github.com/ssongmanktds-edu/argocd/userlist/11.userlist-deployment.yaml
+
+```sh
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userlist
+  labels:
+    app: userlist
+spec:
+  replicas: 1       <-- 2 로 변경
+  selector:
+    matchLabels:
+      app: userlist
+...
+```
+
+- Out of Sync 확인
+
+  - DIFF,  Desired manifest 확인
+- Sync
+
+  - deploy 만 진행
+- 증가된 pod 확인
+
+
+```sh
+$ ku get pod -w
+```
+
+- round robbin 확인
+
+```sh
+# round robbin 확인
+while true;do curl http://userlist-user01.ktcloud.211.254.212.105.nip.io/users/1; sleep 1; echo; done
+```
+
+
+
+
+
+
+
+### (5) Scale out 2
+
+argoCD 에서 직접 replicas 를 증가 시켜 보자.
+
+> github.com/ssongmanktds-edu/argocd/userlist/11.userlist-deployment.yaml
+
+```sh
+# 1) 위치
+userlist-user01 > userlist(deploy) > Live Manifest EDIT
+
+# 2) replicas 수정
+...
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 2                    <-- 3으로 수정
+  revisionHistoryLimit: 10
+  selector:
+...
+
+# 3) save
+save 하는 순간 바로 적용됨.
+github 과 싱크 맞지 않으므로 당연히 Out of Sync 표기됨
+또한 DIFF / Desired Manifest 에도 표기됨
+```
+
+- Out of Sync 확인
+
+  - DIFF,  Desired manifest 확인
+- 증가된 pod 확인
+
+```sh
+$ ku get pod -w
+```
+
+- round robbin 확인
+
+```sh
+# round robbin 확인(3개 pod)
+while true;do curl http://userlist-user01.ktcloud.211.254.212.105.nip.io/users/1; sleep 1; echo; done
+```
+
+- sync 수행
+  - 다시 replicas 2 로 변경됨.
+  - 마지막으로 생성된 pod 가 terminating 됨
+
+
+
+### (6) clean up
+
+```sh
+$ argocd app delete userlist-user01 --grpc-web
+
+$ argocd app delete userlist-user02 --grpc-web
+```
+
+
+
+
+
+
+
+
 
 
 

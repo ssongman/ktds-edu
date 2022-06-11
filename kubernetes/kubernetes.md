@@ -265,13 +265,13 @@ KT Cloud에 VM 서버 하나를 생성하게 되면 다음과 같은 구조가 �
 
 
 
-### (2) terminal (Mobaxterm) 실행
+### (2) ssh terminal (Mobaxterm) 실행
 
 - 메뉴 : session > SSH 
 
 - Romote host : 211.254.212.105
-- User : user01  (개인별 계정)
-- Port : 10022    ( master02 )
+- User : user01(개인별 계정)
+- Port : 10022(master02 ),   10023(master03 )
 - password : 별도 통지
 
 
@@ -299,12 +299,9 @@ remote: Total 69 (delta 15), reused 62 (delta 11), pack-reused 0
 Unpacking objects: 100% (69/69), 1.63 MiB | 4.09 MiB/s, done.
 
 $ ll ~/githubrepo
-total 12
-drwxrwxr-x  3 song song 4096 Jun  2 13:32 ./
-drwxr-xr-x 11 song song 4096 Jun  2 13:32 ../
 drwxrwxr-x  5 song song 4096 Jun  2 13:32 ktds-edu/
 
-$ cd ~/githubrepo/ds-edu
+$ cd ~/githubrepo/ktds-edu
 ```
 
 
@@ -433,7 +430,6 @@ Docker 컨테이너(container)는 격리된 환경에서 돌아가기 때문에 
 $ docker network create my_network
 
 $ docker network ls
-
 ```
 
 
@@ -441,15 +437,11 @@ $ docker network ls
 - userlist 추가
 
 ```sh
-
 # userlist1
 $ docker run -d --net my_network --name userlist1 -p 8181:8181 ssongman/userlist:v1
 
 $ curl http://localhost:8181/users/1
 {"id":1,"name":"Dr. Maudie Christiansen","gender":"F","image":"/assets/image/cat1.jpg"}
-
-
-
 
 
 # uesrlist2
@@ -661,7 +653,28 @@ $ docker network rm my_network
 
 ## 1) k3s 란?
 
-to-be continue
+Rancher 에서 만든 kubernetes 경량화 제품
+
+
+
+### (1) k3s 특징
+
+- K3s는 쉬운 배포
+
+- 낮은 설치 공간
+  - kubernetes 대비 절반의 메모리 사용
+  - 100MB 미만의 바이너리 제공
+
+- CNCF(Cloud Native Computing Foundation) 인증 Kubernetes 제품
+- 일반적인 K8s 에서 작동하는 YAML을 이용할 수 있음
+
+
+
+### (2) k3s 구조
+
+![Deploying, Securing Clusters in 8 minutes with Kubernetes](kubernetes.assets/k3s_falco_sysdig-02-k3s_arch.png)
+
+- k3s 에서는 containerd 라는 제품을 사용함
 
 
 
@@ -674,14 +687,16 @@ to-be continue
 - k3s install
 
 ```sh
-## root 권한으로 실행
-$ sudo curl -sfL https://get.k3s.io | sh -
+## root password 필요  
+
+$ su
+
+$ curl -sfL https://get.k3s.io | sh -
 
 [INFO]  Finding release for channel stable
 [INFO]  Using v1.23.6+k3s1 as release
 …
 [INFO]  systemd: Starting k3s   <-- 마지막 성공 로그
-
 
 ```
 
@@ -696,7 +711,7 @@ Server Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.6+k3s1", G
 
 ```
 
-Client 와 Server Version 이 각각 보인다면 kubernetes cluster 에 연결이 잘 된 것이다.
+Client 와 Server Version 이 각각 보인다면 설치가 잘 된 것이다.
 
 
 
@@ -733,12 +748,55 @@ Server Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.6+k3s1", G
 
 local 에서 직접 kubctl 명령 실행을 위해서는 ~/.kube/config 에 연결정보가 설정되어야 한다.
 
-현재는 /etc/rancher/k3s/k3s.yaml 에 정보가 존재하므로 이를 복사한다. 또한 모든 사용자가 읽을 수 있도록 권한을 부여 한다.
+현재는 /etc/rancher/k3s/k3s.yaml 에 정보가 존재하므로 이를 복사한다. 
+
+
+
+- root 유저로 실행
 
 ```sh
-## root 권한으로 실행
-## kubeconfig
+## root 로 실행
+
+$ su
+
 $ mkdir -p ~/.kube
+
+$ sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+
+
+# 모든사용자에게 읽기 권한 부여
+$ sudo chmod +r /etc/rancher/k3s/k3s.yaml ~/.kube/config
+
+## 확인
+## user 권한으로도 사용 가능
+$ kubectl version
+Client Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.6+k3s1", GitCommit:"418c3fa858b69b12b9cefbcff0526f666a6236b9", GitTreeState:"clean", BuildDate:"2022-04-28T22:16:18Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.6+k3s1", GitCommit:"418c3fa858b69b12b9cefbcff0526f666a6236b9", GitTreeState:"clean", BuildDate:"2022-04-28T22:16:18Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
+
+```
+
+* [참고]root password 변경 방법
+
+```sh
+# root 로 wsl 실행
+$ wsl -u root 
+
+# root password 변경 가능
+$ passwd
+```
+
+
+
+- 특정 user 로 수행
+
+kubectl 명령을 수행하기를 원하는 특정 사용자로 아래 작업을 진행한다.
+
+```sh
+
+## user 권한으로 실행
+
+$ mkdir -p ~/.kube
+
 $ sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
 
 
@@ -757,9 +815,11 @@ Server Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.6+k3s1", G
 
 
 
-
-
 ### (3) alias 정의
+
+kubectl 명령과 각종 namespace 를 매번 입력하기가 번거롭다면 위와 같이 alias 를 정의후 사용할 수 있으니 참고 하자.
+
+적용하려면 source 명령을 이용한다.
 
 ```sh
 $ cat > ~/env
@@ -771,15 +831,11 @@ alias kar='k -n argo-rollouts'
 alias ki='k -n istio-system'
 alias kb='k -n bookinfo'
 alias kii='k -n istio-ingress'
-alias kka='k -n kafka'
+
 
 ## alias 를 적용하려면 source 명령 수행
 $ source ~/env
 ```
-
-kubectl 명령과 각종 namespace 를 매번 입력하기가 번거롭다면 위와 같이 alias 를 정의후 사용할 수 있으니 참고 하자.
-
-적용하려면 source 명령을 이용한다.
 
 
 
@@ -790,8 +846,6 @@ kubectl 명령과 각종 namespace 를 매번 입력하기가 번거롭다면 �
 ## 3) sample app deploy
 
 ### (1) Namespace
-
-
 
 ```sh
 ## kubectl create ns [namespace_name]
@@ -817,7 +871,30 @@ $ alias ku='kubectl -n user01'     <-- 자신의 namespace 명을 입력한다.
 
 ### (2) Deployment
 
-- yaml 확인
+- userlist deployment 생성 -  CLI 이용
+
+```sh
+# deploy 생성
+$ ku create deploy userlist --image=ssongman/userlist:v1
+
+
+# 확인
+$ ku get pod -w
+NAME                        READY   STATUS              RESTARTS   AGE
+userlist-75c7d7dfd7-kvtjh   0/1     ContainerCreating   0          15s
+userlist-75c7d7dfd7-kvtjh   1/1     Running             0          40s
+
+
+# 삭제
+$ ku delete deploy userlist
+
+```
+
+
+
+
+
+- userlist deployment 생성 -  yaml 이용
 
 ```sh
 $ cd ~/githubrepo/ktds-edu
@@ -844,23 +921,16 @@ spec:
         image: ssongman/userlist:v1
         ports:
         - containerPort: 8181
-
-```
-
-
-
-- userlist deployment 생성
-
-```sh
-$ cd ~/githubrepo/ktds-edu
+---
 
 $ ku create -f ./kubernetes/userlist/11.userlist-deployment.yaml
 
 $ ku get pod
 NAME                       READY   STATUS    RESTARTS   AGE
-userlist-c78d76c78-vz9dp   1/1     Running   0          4s
+userlist-c78d76c78-dntfx   1/1     Running   0          10s
 
 # Status 가 Running 이 되어야 정상 기동된 상태임
+
 ```
 
 
@@ -868,10 +938,14 @@ userlist-c78d76c78-vz9dp   1/1     Running   0          4s
 - pod 내에서 확인
 
 ```sh
-$ ku exec -it userlist-c78d76c78-vz9dp -- bash
 
-# userlist pod 내로 진입
-$ curl localhost:8181
+$ ku get pod
+NAME                       READY   STATUS    RESTARTS   AGE
+userlist-c78d76c78-dntfx   1/1     Running   0          4s
+
+
+# userlist pod 내에서 확인
+$ ku exec -it userlist-c78d76c78-dntfx -- curl -i localhost:8181
 HTTP/1.1 200
 Content-Type: text/html;charset=UTF-8
 Content-Language: en
@@ -888,63 +962,54 @@ Date: Wed, 01 Jun 2022 07:34:49 GMT
 
 # 200 OK 로 정상
 
-
-$ curl localhost:8181/users/1
-{"id":1,"name":"Ms. Drake Murphy","gender":"F","image":"/assets/image/cat1.jpg"}root@userlist-c78d76c78-52s27:/usr/src/app#
+$ ku exec -it userlist-c78d76c78-dntfx -- curl localhost:8181/users/1
+{"id":1,"name":"Ms. Drake Murphy","gender":"F","image":"/assets/image/cat1.jpg"}
 
 
 ```
 
 
 
-### (3) curltest(test 목적 pod)
+### (3) curl test (test 목적 pod)
+
+다른 pod 에서 userlist 를 call 해보자.
+
+테스트 목적의 curltest 라는 pod 를 생성해보자.
 
 ```sh
-$ cd ~/githubrepo/ktds-edu
 
-$ cat ./kubernetes/userlist/10.curltest.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: curltest
-  labels:
-    app: curltest
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: curltest
-  template:
-    metadata:
-      labels:
-        app: curltest
-    spec:
-      containers:
-      - name: main
-        image: curlimages/curl
-        command: ["sleep", "365d"]
-```
+$ ku run curltest --image=curlimages/curl -- sleep 365d
+pod/curltest created
+
+
+$ ku exec -it curltest -- curl -h
+Usage: curl [options...] <url>
+ -d, --data <data>          HTTP POST data
+ -f, --fail                 Fail fast with no output on HTTP errors
+ -h, --help <category>      Get help for commands
+ -i, --include              Include protocol response headers in the output
+ -o, --output <file>        Write to file instead of stdout
+ -O, --remote-name          Write output to a file named as the remote file
+ -s, --silent               Silent mode
+ -T, --upload-file <file>   Transfer local FILE to destination
+ -u, --user <user:password> Server user and password
+ -A, --user-agent <name>    Send User-Agent <name> to server
+ -v, --verbose              Make the operation more talkative
+ -V, --version              Show version number and quit
 
 
 
-- 확인
+# 확인
+u$ ku get pod
+NAME                       READY   STATUS    RESTARTS   AGE
+userlist-c78d76c78-dntfx   1/1     Running   0          9m18s
+curltest                   1/1     Running   0          2m49s
 
-```sh
-$ cd ~/githubrepo/ktds-edu
-
-$ ku create -f ./kubernetes/userlist/10.curltest.yaml
-
-
-$ ku get pod
-NAME                        READY   STATUS        RESTARTS   AGE
-userlist-c78d76c78-52s27    1/1     Running       0          21m
-curltest-564b75669d-gsfnb   1/1     Running       0          16s
-
-
+# pod ip 확인
 $ ku get pod -o wide
-NAME                        READY   STATUS        RESTARTS   AGE   IP           NODE              NOMINATED NODE   READINESS GATES
-userlist-c78d76c78-52s27    1/1     Running       0          21m   10.42.0.9    desktop-msrerbm   <none>           <none>
-curltest-564b75669d-gsfnb   1/1     Running       0          38s   10.42.0.11   desktop-msrerbm   <none>           <none>
+NAME                       READY   STATUS    RESTARTS   AGE     IP           NODE              NOMINATED NODE   READINESS GATES
+userlist-c78d76c78-dntfx   1/1     Running   0          9m25s   10.42.0.10   desktop-msrerbm   <none>           <none>
+curltest                   1/1     Running   0          2m56s   10.42.0.12   desktop-msrerbm   <none>           <none>
 
 ```
 
@@ -953,10 +1018,11 @@ curltest-564b75669d-gsfnb   1/1     Running       0          38s   10.42.0.11   
 - curltest pod 내에서 테스트
 
 ```sh
-$ ku exec -it curltest-564b75669d-gsfnb -- sh
+$ ku exec -it curltest -- sh
 
-$ curl 10.42.0.9:8181/users/1
-{"id":1,"name":"Ms. Drake Murphy","gender":"F","image":"/assets/image/cat1.jpg"}
+$ curl 10.42.0.10:8181/users/1
+{"id":1,"name":"Mr. Mackenzie Gulgowski","gender":"F","image":"/assets/image/cat1.jpg"}
+
 ```
 
 
@@ -964,8 +1030,8 @@ $ curl 10.42.0.9:8181/users/1
 - local 에서 실행
 
 ```sh
-$ ku exec -it curltest-564b75669d-gsfnb -- curl 10.42.0.9:8181/users/1
-{"id":1,"name":"Ms. Drake Murphy","gender":"F","image":"/assets/image/cat1.jpg"}
+$ ku exec -it curltest -- curl 10.42.0.10:8181/users/1
+{"id":1,"name":"Mr. Mackenzie Gulgowski","gender":"F","image":"/assets/image/cat1.jpg"}
 ```
 
 
@@ -976,7 +1042,7 @@ cluster 내에 내부 network 개념을 이해하는 중요한 예제이니 꼭 
 
 
 
-하지만 userlist pod 가 2개 이상일때 어떻게 주소를 찾아야 하며 어떻게 접근해야 하나???
+하지만 userlist pod 가 2개 이상일때 어떻게 주소를 찾아야 하며 어떻게 접근해야 할까???
 
 그 솔루션이 바로 kubernetes service 라는 객체 이다.
 
@@ -991,7 +1057,8 @@ cluster 내에 내부 network 개념을 이해하는 중요한 예제이니 꼭 
 ```sh
 $ cd ~/githubrepo/ktds-edu
 
-$ cat > ./kubernetes/userlist/12.userlist-svc.yaml
+# service manifest file 확인
+$ cat ./kubernetes/userlist/12.userlist-svc.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -1005,13 +1072,15 @@ spec:
     port: 80
     targetPort: 8181
   type: ClusterIP
-```
 
 
-
-```sh
 $ ku create -f ./kubernetes/userlist/12.userlist-svc.yaml
 service/userlist-svc created
+
+$ ku get svc
+NAME           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+userlist-svc   ClusterIP   10.43.240.205   <none>        80/TCP    9s
+
 ```
 
 
@@ -1020,14 +1089,15 @@ service/userlist-svc created
 
 ```sh
 $ ku get pod -o wide
-NAME                        READY   STATUS    RESTARTS   AGE   IP           NODE              NOMINATED NODE   READINESS GATES
-userlist-c78d76c78-52s27    1/1     Running   0          77m   10.42.0.9    desktop-msrerbm   <none>           <none>
-curltest-564b75669d-gsfnb   1/1     Running   0          56m   10.42.0.11   desktop-msrerbm   <none>           <none>
+NAME                       READY   STATUS    RESTARTS   AGE     IP           NODE              NOMINATED NODE   READINESS GATES
+userlist-c78d76c78-dntfx   1/1     Running   0          13m     10.42.0.10   desktop-msrerbm   <none>           <none>
+curltest                   1/1     Running   0          7m22s   10.42.0.12   desktop-msrerbm   <none>           <none>
 
-$ ku exec -it curltest-564b75669d-gsfnb -- sh
+# curltest pod 내로 진입
+$ ku exec -it curltest -- sh
 
 # pod ip 로 call
-$ curl 10.42.0.9:8181/users/1
+$ curl 10.42.0.10:8181/users/1
 {"id":1,"name":"Ms. Drake Murphy","gender":"F","image":"/assets/image/cat1.jpg"}
 
 # svc name으로 call
@@ -1036,17 +1106,15 @@ $ curl userlist-svc/users/1
 
 # svc name 의 ip 식별
 $ ping userlist-svc
-PING userlist-svc (10.43.17.249): 56 data bytes
+PING userlist-svc (10.43.240.205): 56 data bytes
 
 # svc ip로 call
-$ curl 10.43.17.249/users/1
+$ curl 10.43.240.205/users/1
 {"id":1,"name":"Ms. Drake Murphy","gender":"F","image":"/assets/image/cat1.jpg"}
 
 ```
 
-
-
-위 부분을 반드시 이해하기 바란다.  
+3개의 curl 결과가 모두 동일한 것을 볼 수 있다.  위 부분을 반드시 이해하기 바란다.  
 
 이해 해야할 주요 포인트를 정리하자면...
 
@@ -1067,7 +1135,6 @@ $ curl 10.43.17.249/users/1
 $ ku get deploy
 NAME       READY   UP-TO-DATE   AVAILABLE   AGE
 userlist   1/1     1            1           82m
-curltest   1/1     1            1           61m
 
 $ ku edit deploy userlist
 ```
@@ -1078,20 +1145,11 @@ $ ku edit deploy userlist
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    deployment.kubernetes.io/revision: "1"
-  creationTimestamp: "2022-06-01T07:31:22Z"
-  generation: 1
-  labels:
-    app: userlist
   name: userlist
   namespace: song
-  resourceVersion: "2738"
-  uid: a5548d35-3df2-4602-b080-b2396472c0e8
+  ...
 spec:
-  progressDeadlineSeconds: 600
   replicas: 1                      <--- 3으로 수정한다.
-  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app: userlist
@@ -1102,11 +1160,11 @@ spec:
 
 ```sh
 $ ku get pod
-NAME                        READY   STATUS    RESTARTS   AGE
-userlist-c78d76c78-52s27    1/1     Running   0          83m
-curltest-564b75669d-gsfnb   1/1     Running   0          63m
-userlist-c78d76c78-wq9rw    1/1     Running   0          6s
-userlist-c78d76c78-dcjph    1/1     Running   0          6s
+NAME                       READY   STATUS    RESTARTS   AGE
+userlist-c78d76c78-dntfx   1/1     Running   0          18m
+curltest                   1/1     Running   0          11m
+userlist-c78d76c78-pg67g   1/1     Running   0          4s
+userlist-c78d76c78-ccbdp   1/1     Running   0          4s
 ```
 
 너무나 쉽게 replicas 3 으로 scale out 이 되었다.
@@ -1117,8 +1175,8 @@ userlist-c78d76c78-dcjph    1/1     Running   0          6s
 
 ```sh
 
-$ ku exec -it curltest-564b75669d-gsfnb -- sh
-ke Murphy","gender":"F","image":"/assets/image/cat1.jpg"}
+$ ku exec -it curltest -- sh
+
 
 # svc name으로 call - 여러번 해보자.
 $ curl userlist-svc/users/1
@@ -1142,8 +1200,6 @@ $ curl userlist-svc/users/1
 ```
 
 호출할때마다 응답하는 pod 가 서로 달라진다는 점을 알 수 있다.
-
-
 
 아래와 같이 1초에 한번씩 call 하도록 명령을 실행해보자.  더욱더 확실히 알수 있을 것이다.
 
@@ -1187,9 +1243,11 @@ Round Robin 방식은 클라이언트의 요청을 단순하게 들어온 순서
 
 인그레스는 클러스터 내의 서비스에 대한 외부 접근을 관리하는 API 오브젝트이며, 일반적으로 HTTP를 관리한다.
 
-인그레스는 부하 분산, SSL 종료, 명칭 기반의 가상 호스팅을 제공할 수 있다.
+인그레스는 부하 분산, SSL, 명칭 기반의 가상 호스팅을 제공할 수 있다.
 
-인그레스는 클러스터 외부에서 클러스터 내부 서비스로 HTTP와 HTTPS 경로를 노출한다. 트래픽 라우팅은 인그레스 리소스에 정의된 규칙에 의해 컨트롤된다.
+인그레스는 클러스터 외부에서 클러스터 내부 서비스로 HTTP와 HTTPS 경로를 노출한다. 
+
+트래픽 라우팅은 인그레스 리소스에 정의된 규칙에 의해 컨트롤된다.
 
 - ingress architecture
 
@@ -1224,7 +1282,9 @@ traefik(https://traefik.io/) 이라는 요즘 뜨고 있는 proxy tool 을 사�
 - ingress yaml
 
 ```sh
-cat > 15.userlist-ingress.yaml
+$ cd ~/githubrepo/ktds-edu
+
+$ cat ./kubernetes/userlist/15.userlist-ingress-local.yaml
 
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -1244,27 +1304,24 @@ spec:
             name: userlist-svc
             port:
               number: 80
-```
 
 
-
-- 실행
-
-```sh
-$ ku create -f 15.userlist-ingress.yaml
+# 실행
+$ ku create -f ./kubernetes/userlist/15.userlist-ingress-local.yaml
 ingress.networking.k8s.io/userlist-ingress created
 
 $ ku get ingress
 NAME               CLASS    HOSTS                    ADDRESS         PORTS   AGE
 userlist-ingress   <none>   userlist.songlab.co.kr   172.22.253.23   80      21s
 
+
 ```
 
 
 
-
-
 - local 에서 확인
+
+traefik node port 를 아래에 삽입하여 curl 테스트 해보자.
 
 ```sh
 $ curl http://localhost:32423/users/1 -H "Host:userlist.songlab.co.kr"
@@ -1276,14 +1333,21 @@ $ curl http://localhost:32423/users/1 -H "Host:userlist.songlab.co.kr"
 $ curl http://localhost:32423/users/1 -H "Host:userlist.songlab.co.kr"
 {"id":1,"name":"Ms. Drake Murphy","gender":"F","image":"/assets/image/cat1.jpg"}
 
-
 ```
 
-이제 userlist 에 접근할때 local 에서도 직접 접근할 수 있게 되었다. 위 service 테스트시 userlist 접근을 위해서는 cluster inner network 에 진입을 위해서 curltest pod 내에서 테스트를 진행했었다. 이제는 ingress 라는 오브젝가 외부와의 접근을 연결시켜주기 때문에 굳이 curltest pod 가 필요없으며 local 에서 직접 테스트 할 수 있다.
+이제 userlist 에 접근할때 local 에서도 직접 접근할 수 있게 되었다. 
 
+위 service 테스트시 userlist 접근을 위해서는 cluster inner network 에 진입을 위해서 curltest pod 내에서 테스트를 진행했었다. 
 
+이제는 ingress 라는 오브젝가 외부와의 접근을 연결시켜주기 때문에 굳이 curltest pod 가 필요없으며 local 에서 직접 테스트 할 수 있다.
 
-하지만 이 또한 완전환 모습은 아니다.  연결할때마다 node port 32423 를 붙여야 하는 불편함이 존재한다. 이런 불편을 해결하기 위해서 일반적으로 L4 라는 load balancer 를 둔다. 하만 지금환경은 개인 PC 이므로 이해만 하자.
+하지만 이 또한 완전환 모습은 아니다.  
+
+연결할때마다 node port 32423 를 붙여야 하는 불편함이 존재한다. 
+
+이런 불편을 해결하기 위해서 일반적으로 L4 라는 load balancer 를 둔다.
+
+하지만 지금환경은 개인 PC 이므로 이해만 하자.
 
 
 
@@ -1294,12 +1358,10 @@ $ curl http://localhost:32423/users/1 -H "Host:userlist.songlab.co.kr"
 
 ### (7) clean up
 
-istio test 를 위해서 아직 삭제하지는 말자.
-
 ```sh
 $ cd ~/githubrepo/ktds-edu
 
-$ ku delete -f ./kubernetes/userlist/10.curltest.yaml
+$ ku delete pod curltest
 $ ku delete -f ./kubernetes/userlist/11.userlist-deployment.yaml
 $ ku delete -f ./kubernetes/userlist/12.userlist-svc.yaml
 $ ku delete -f ./kubernetes/userlist/15.userlist-ingress-local.yaml
@@ -1309,9 +1371,17 @@ $ ku delete -f ./kubernetes/userlist/15.userlist-ingress-local.yaml
 
 
 
-
-
 # 5. K3s 실습(KT Cloud)
+
+
+
+## 1) KT Cloud 접속
+
+익숙한 ssh terminal(mobaxterm 등) 을 이용해서 KT Cloud Master node에 접근한다.
+
+접속정보: 별도 공지
+
+
 
 ## 1) k3s 설치(참고)
 
@@ -1393,13 +1463,35 @@ $ sh /usr/local/bin/k3s-killall.sh
 ```sh
 $ kubectl get ns
 NAME              STATUS   AGE
-default           Active   26m
-kube-node-lease   Active   26m
-kube-public       Active   26m
-kube-system       Active   26m
-user01            Active   111s
-user02            Active   110s
-user03            Active   110s
+argo-rollouts     Active   40h
+argocd            Active   2d5h
+default           Active   9d
+istio-ingress     Active   9d
+istio-system      Active   9d
+kube-node-lease   Active   9d
+kube-public       Active   9d
+kube-system       Active   9d
+song              Active   2d3h
+user01            Active   9d
+user02            Active   9d
+user03            Active   9d
+user04            Active   9d
+user05            Active   9d
+user06            Active   9d
+user07            Active   9d
+user08            Active   9d
+user09            Active   9d
+user10            Active   9d
+user11            Active   9d
+user12            Active   9d
+user13            Active   9d
+user14            Active   9d
+user15            Active   9d
+user16            Active   9d
+user17            Active   9d
+user18            Active   9d
+user19            Active   9d
+user20            Active   9d
 
 
 $ kubectl get ns user01
@@ -1429,8 +1521,12 @@ No resources found in user01 namespace.
 ```sh
 $ cd ~/githubrepo/ktds-edu
 
-$ kubectl -n user01 create -f ./kubernetes/userlist/11.userlist-deployment.yaml
-$ kubectl -n user01 create -f ./kubernetes/userlist/12.userlist-svc.yaml
+
+# ku 로 alias 선언
+$ alias ku='kubectl -n user01'
+
+$ ku create -f ./kubernetes/userlist/11.userlist-deployment.yaml
+$ ku create -f ./kubernetes/userlist/12.userlist-svc.yaml
 
 
 $ ku get deployment
@@ -1448,14 +1544,16 @@ userlist-svc   ClusterIP   10.43.2.174   <none>        80/TCP    9s
 
 ```
 
-- 확인
-
-  userlist pod 내에 접근해서 테스트 시도
+- curltest 확인
+  - curltest pod 내에 접근해서 테스트 시도
+  
 
 ```sh
-$ ku exec -it userlist-c78d76c78-r5bzs -- bash
+# curltest pod 생성
+$ ku run curltest --image=curlimages/curl -- sleep 365d
 
-root@userlist-c78d76c78-r5bzs:/usr/src/app# curl userlist-svc/users/1
+# 확인
+$ ku exec -it curltest -- curl userlist-svc/users/1
 {"id":1,"name":"Florian Reilly","gender":"F","image":"/assets/image/cat1.jpg"}
 
 ```
@@ -1483,21 +1581,13 @@ $ ku edit deploy userlist
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    deployment.kubernetes.io/revision: "1"
-  creationTimestamp: "2022-06-01T12:29:07Z"
-  generation: 1
   labels:
     app: userlist
   name: userlist
   namespace: user01
-  resourceVersion: "28609"
-  uid: 06528a23-157f-4001-a2c8-f6a595996814
 spec:
-  progressDeadlineSeconds: 600
   replicas: 1                     <--- 3으로 수정한다.
-  revisionHistoryLimit: 10 
-      ....
+  ....
 ```
 
 
@@ -1505,12 +1595,6 @@ spec:
 - 상태확인
 
 ```sh
-$ ku get pod -w
-NAME                       READY   STATUS              RESTARTS   AGE
-userlist-c78d76c78-g6vmt   0/1     ContainerCreating   0          4s
-userlist-c78d76c78-gjkts   0/1     ContainerCreating   0          4s
-userlist-c78d76c78-r5bzs   1/1     Running             0          8m42s
-
 $ ku get pod
 NAME                       READY   STATUS    RESTARTS   AGE
 userlist-c78d76c78-g6vmt   1/1     Running   0          92s
@@ -1525,10 +1609,11 @@ userlist-c78d76c78-r5bzs   1/1     Running   0          10m
 - userlist pod 내에서 테스트
 
 ```sh
-$ ku exec -it userlist-c78d76c78-r5bzs -- bash
+$ ku exec -it curltest -- sh
 
 
 $ while true; do curl userlist-svc/users/1; sleep 1; echo; done
+
 {"id":1,"name":"Albin Pollich V","gender":"F","image":"/assets/image/cat1.jpg"}
 {"id":1,"name":"Albin Pollich V","gender":"F","image":"/assets/image/cat1.jpg"}
 {"id":1,"name":"Lafayette Boyle","gender":"F","image":"/assets/image/cat1.jpg"}
@@ -1544,13 +1629,11 @@ $ while true; do curl userlist-svc/users/1; sleep 1; echo; done
 ...
 ```
 
-
+round robbin 방식의 call 이 잘되는 것을 확인할 수 있다.
 
 
 
 ### (3) Ingress 
-
-
 
 - ingress controller 확인
 
@@ -1578,8 +1661,6 @@ traefik          LoadBalancer   10.43.45.189   172.27.0.168,172.27.0.29,172.27.0
 ```
 
 그러므로 우리는 211.254.212.105:80 으로 call 을 보내면 된다.  대신 Cluster 내 진입후 자신의 service 를 찾기 위한 host 를 같이 보내야 한다. 
-
-
 
 
 
@@ -1639,14 +1720,12 @@ Production 환경에서는 고유한 도메인이 발급되고 DNS 에 등록 �
 
 
 
-
-
 - ingress 생성
 
 ```sh
 $ cd ~/githubrepo/ktds-edu
 
-$ kubectl -n user01 create -f ./kubernetes/userlist/16.userlist-ingress-ktcloud.yaml
+$ ku create -f ./kubernetes/userlist/16.userlist-ingress-ktcloud.yaml
 
 $ ku get ingress
 NAME               CLASS    HOSTS                                            ADDRESS                                                                   PORTS   AGE
@@ -1659,9 +1738,12 @@ userlist-ingress   <none>   userlist.user01.ktcloud.211.254.212.105.nip.io   172
 - 서버 terminal 에서 확인
 
 ```sh
+# traefik node port 로 접근시도
 $ curl localhost:30070/users/1 -H "Host:userlist.user01.ktcloud.211.254.212.105.nip.io"
 {"id":1,"name":"Albin Pollich V","gender":"F","image":"/assets/image/cat1.jpg"}
 
+
+# 부여한 host 로 접근시도
 $ curl userlist.user01.ktcloud.211.254.212.105.nip.io/users/1
 {"id":1,"name":"Florian Reilly","gender":"F","image":"/assets/image/cat1.jpg"}
 ```
@@ -1670,9 +1752,11 @@ $ curl userlist.user01.ktcloud.211.254.212.105.nip.io/users/1
 
 첫번째는 nodeport 를 통해서 접속을 시도한 경우이다.
 
-
-
 두번째는 KT Cloud 에서 제공하는 공인 IP (Virtual Router)의 80 port 로 접속이 되었다.
+
+(위부분이 이해되지 않는다면 "KT Cloud 서버 / KT Cloud 설명"  부분을 참고하자.)
+
+
 
 즉, 위 도메인은 어디서든지 접속 가능한 상태이다.  확인을 위해서 로컬 크롬브라우저에서 접속을 시도해 보자.
 
@@ -1686,16 +1770,15 @@ $ curl userlist.user01.ktcloud.211.254.212.105.nip.io/users/1
 
 
 
-
-
 ### (4) clean up
 
 ```sh
 $ cd ~/githubrepo/ktds-edu
 
-$ kubectl -n user01 delete -f ./kubernetes/userlist/11.userlist-deployment.yaml
-$ kubectl -n user01 delete -f ./kubernetes/userlist/12.userlist-svc.yaml
-$ kubectl -n user01 delete -f ./kubernetes/userlist/16.userlist-ingress-ktcloud.yaml
+$ ku delete pod curltest
+$ ku delete -f ./kubernetes/userlist/11.userlist-deployment.yaml
+$ ku delete -f ./kubernetes/userlist/12.userlist-svc.yaml
+$ ku delete -f ./kubernetes/userlist/16.userlist-ingress-ktcloud.yaml
 ```
 
 

@@ -231,8 +231,8 @@ helm client 를 local 에 설치해 보자.
 
 ```sh
 ## 임시 디렉토리를 하나 만들자.
-$ mkdir -p ~/song/helm/
-$ cd ~/song/helm/
+$ mkdir -p ~/helm/
+$ cd ~/helm/
 
 $ wget https://get.helm.sh/helm-v3.9.0-linux-amd64.tar.gz
 $ tar -zxvf helm-v3.9.0-linux-amd64.tar.gz
@@ -273,6 +273,34 @@ $ helm repo add bitnami https://charts.bitnami.com/bitnami
 $ helm search repo bitnami
 # bitnami 가 만든 다양한 오픈소스 샘플을 볼 수 있다.
 
+
+# 설치테스트(샘플: nginx)
+$ helm -n user01 install nginx bitnami/nginx
+
+$ ku get all
+NAME                        READY   STATUS              RESTARTS   AGE
+pod/svclb-nginx-stgx5       0/1     Pending             0          4s
+pod/nginx-f9d57f644-qhtnk   0/1     ContainerCreating   0          4s
+
+NAME            TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+service/nginx   LoadBalancer   10.43.11.105   <pending>     80:30543/TCP   4s
+
+NAME                         DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+daemonset.apps/svclb-nginx   1         1         0       1            0           <none>          4s
+
+NAME                    READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/nginx   0/1     1            0           4s
+
+NAME                              DESIRED   CURRENT   READY   AGE
+replicaset.apps/nginx-f9d57f644   1         1         0       4s
+
+
+
+# 설치 삭제
+$ helm -n user01 delete nginx
+
+$ ku get all
+No resources found in user01 namespace.
 ```
 
 
@@ -313,7 +341,7 @@ $ k create namespace istio-system
 ### (3) istio crd 설치
 
 ```sh
-$ helm install istio-base istio/base -n istio-system
+$ helm -n istio-system install istio-base istio/base
 
 $ helm -n istio-system ls
 NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART           APP VERSION
@@ -361,6 +389,35 @@ istiooperators.install.istio.io            2022-06-02T04:13:22Z
 
 
 
+- repo 에서 직접 설치가 안된다면...
+
+```sh
+
+# chart 를 fetch 받아서 local 에서 수행한다.
+$ mkdir ~/istio
+
+$ cd ~/istio
+
+$ helm fetch istio/base
+
+$ ls -ltr
+-rw-r--r--  1 song song 50197 Jun 11 18:36 base-1.14.1.tgz
+
+$ tar -xzvf base-1.14.1.tgz
+
+# local chart로 직접 설치진행
+$ helm -n istio-system install istio-base ~/istio/base
+
+$ helm -n istio-system ls
+NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART           APP VERSION
+istio-base      istio-system    1               2022-06-11 18:42:06.172184 +0900 KST    deployed        base-1.14.1     1.14.1
+
+```
+
+
+
+
+
 ### (4) install istiod
 
 Controle Plane역할을 수행하는 istiod 를 설치하자.
@@ -401,6 +458,36 @@ horizontalpodautoscaler.autoscaling/istiod   Deployment/istiod   0%/80%    1    
 
 
 
+- repo 에서 직접 설치가 안된다면...
+
+```sh
+# chart 를 fetch 받아서 local 에서 수행한다.
+$ mkdir ~/istio
+
+$ cd ~/istio
+
+$ helm fetch istio/istiod
+
+$ ls -ltr
+-rw-r--r--  1 song song 50197 Jun 11 18:36 base-1.14.1.tgz
+-rw-r--r--  1 song song 36974 Jun 11 18:48 istiod-1.14.1.tgz
+
+$ tar -xzvf istiod-1.14.1.tgz
+
+# local chart로 직접 설치진행
+$ helm -n istio-system install istio-istiod ~/istio/istiod
+
+$ helm -n istio-system ls
+NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART           APP VERSION
+istio-base      istio-system    1               2022-06-11 18:42:06.172184 +0900 KST    deployed        base-1.14.1     1.14.1
+istio-istiod    istio-system    1               2022-06-11 18:50:18.0303375 +0900 KST   deployed        istiod-1.14.1   1.14.1
+
+```
+
+
+
+
+
 ### (5) clean up
 
 ```sh
@@ -417,10 +504,12 @@ $ helm -n istio-system delete istio-base
 1교시 kubernetes 실습때 수행했던 userlist pod 를 다시 확인해 보자.
 
 ```sh
+$ ku create deploy userlist --image=ssongman/userlist:v1
+
+
 $ ku get pod
 NAME                        READY   STATUS    RESTARTS   AGE
-userlist-c78d76c78-vz9dp    1/1     Running   0          8m8s
-curltest-564b75669d-h8gq8   1/1     Running   0          5m44s
+userlist-75c7d7dfd7-7tf7g   1/1     Running   0          6s
 ```
 
 
@@ -459,18 +548,20 @@ $ ku get ns user01 -o yaml
 apiVersion: v1
 kind: Namespace
 metadata:
-  creationTimestamp: "2022-06-02T04:35:42Z"
+  creationTimestamp: "2022-06-11T06:31:52Z"
   labels:
     kubernetes.io/metadata.name: user01
   name: user01
-  resourceVersion: "10511"
-  uid: 3aca119d-406a-4d76-98ac-01957d613257
+  resourceVersion: "813"
+  uid: 1c6631f6-0891-4fd6-b498-69c9840a0e2c
 spec:
   finalizers:
   - kubernetes
 status:
   phase: Active
 ```
+
+labels 항목에 istio 관련 내용이 없음을 확인한다.
 
 
 
@@ -489,13 +580,13 @@ $ ku get ns user01 -o yaml
 apiVersion: v1
 kind: Namespace
 metadata:
-  creationTimestamp: "2022-06-02T04:35:42Z"
+  creationTimestamp: "2022-06-11T06:31:52Z"
   labels:
     istio-injection: enabled                    <-- label 이 잘 추가되었다.
     kubernetes.io/metadata.name: user01
   name: user01
-  resourceVersion: "11338"
-  uid: 3aca119d-406a-4d76-98ac-01957d613257
+  resourceVersion: "3904"
+  uid: 1c6631f6-0891-4fd6-b498-69c9840a0e2c
 spec:
   finalizers:
   - kubernetes
@@ -512,22 +603,21 @@ status:
 ```sh
 $ ku get pod
 NAME                        READY   STATUS    RESTARTS   AGE
-userlist-c78d76c78-vz9dp    1/1     Running   0          18m
-curltest-564b75669d-h8gq8   1/1     Running   0          16m
+userlist-75c7d7dfd7-7tf7g   1/1     Running   0          112s
 
-$ ku delete pod userlist-c78d76c78-vz9dp
-pod "userlist-c78d76c78-vz9dp" deleted
+
+$ ku delete pod userlist-75c7d7dfd7-7tf7g
+pod "userlist-75c7d7dfd7-7tf7g" deleted
 
 
 # 확인
 $ ku get pod
 NAME                        READY   STATUS    RESTARTS   AGE
-curltest-564b75669d-h8gq8   1/1     Running   0          17m
-userlist-c78d76c78-fgzs9    2/2     Running   0          62s   <-- istio sidecar 가 포함되어 2개의 container 가 되었다.
+userlist-75c7d7dfd7-989mc    2/2     Running   0          62s   <-- istio sidecar 가 포함되어 2개의 container 가 되었다.
 
 
 # describe 로 확인
-$ ku describe pod userlist-c78d76c78-fgzs9
+$ ku describe pod userlist-75c7d7dfd7-989mc
 Containers:
   userlist:
     Container ID:   containerd://5d5e4201863ce1d819fc27cf600a9cc4eca040b734cb2a8e0cd726b6cdd3dc10
@@ -572,12 +662,8 @@ Containers:
 ### (4) clean up
 
 ```sh
-$ cd ~/githubrepo/ktds-edu
+$ ku delete deploy userlist
 
-$ ku delete -f ./kubernetes/userlist/10.curltest.yaml
-$ ku delete -f ./kubernetes/userlist/11.userlist-deployment.yaml
-$ ku delete -f ./kubernetes/userlist/12.userlist-svc.yaml
-$ ku delete -f ./kubernetes/userlist/15.userlist-ingress-local.yaml
 ```
 
 
@@ -661,12 +747,11 @@ istio 적용하는데 있어서 Application 자체를 변경할 필요가 없다
 
 ```sh
 
-alias ku='kubectl -n user01'
+$ alias ku='kubectl -n user01'
 
 $ kubectl label namespace user01 istio-injection=enabled
 
-
-$ ku get ns user01 -o yaml
+$ kubectl get ns user01 -o yaml
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -688,13 +773,32 @@ status:
 
 
 
+- git clone
+  - 기존에 이미 받아 놓았으면 생략가능
+
+```sh
+$ mkdir ~/githubrepo
+
+$ cd ~/githubrepo
+
+$ git clone https://github.com/ssongman/ktds-edu.git
+
+$ ll
+drwxrwxr-x 6 user01 user01 4096 Jun 11 10:14 ktds-edu/
+
+$ cd ~/githubrepo/ktds-edu/
+```
+
+
+
 - bookinfo app depoy 
 
 ```sh
-$ ku apply -f samples/bookinfo/platform/kube/bookinfo.yaml
 
+$ cd ~/githubrepo/ktds-edu
 
-$ ku apply -f 11.bookinfo.yaml
+$ ku apply -f ./istio/bookinfo/11.bookinfo.yaml
+
 service/details created
 serviceaccount/bookinfo-details created
 deployment.apps/details-v1 created
@@ -737,6 +841,8 @@ reviews        ClusterIP   10.43.63.134    <none>        9080/TCP   25s
 
 
 - 확인
+  - ratings container 에서 productpage 를 호출하는 테스트
+
 
 ```sh
 $ ku exec "$(ku get pod -l app=ratings -o jsonpath='{.items[0].metadata.name}')" -c ratings -- curl -sS productpage:9080/productpage | grep -o "<title>.*</title>"
@@ -750,9 +856,14 @@ $ ku exec "$(ku get pod -l app=ratings -o jsonpath='{.items[0].metadata.name}')"
 
 #### virtualservice / gateway
 
+bookinfo host 를 각자 계정명으로 변경한후 적용하자.
+
 ```sh
 
-$ cat > 12.bookinfo-gw-vs.yaml
+$ cd ~/githubrepo/ktds-edu
+
+# 12.bookinfo-gw-vs.yaml 파일 확인
+$ cat ./istio/bookinfo/12.bookinfo-gw-vs.yaml
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
@@ -775,7 +886,7 @@ metadata:
   name: bookinfo
 spec:
   hosts:
-  - "*"
+  - "bookinfo.user01.ktcloud.211.254.212.105.nip.io"    <-- 각자 계정명으로 변경 필요
   gateways:
   - bookinfo-gateway
   http:
@@ -795,16 +906,19 @@ spec:
         host: productpage
         port:
           number: 9080
-```
 
-
-
-```sh
-$ ku create -f 12.bookinfo-gw-vs.yaml
-
-$ ku get vs
+# 생성
+$ ku apply -f ./istio/bookinfo/12.bookinfo-gw-vs.yaml
 
 $ ku get gateway
+NAME               AGE
+bookinfo-gateway   4s
+
+$ ku get vs
+NAME       GATEWAYS               HOSTS   AGE
+bookinfo   ["bookinfo-gateway"]   ["*"]   11s
+
+
 ```
 
 
@@ -813,20 +927,25 @@ $ ku get gateway
 
 #### Ingress
 
+bookinfo host 를 각자 계정명으로 변경한후 적용하자.
+
 ```sh
 
-$ cat > 15.bookinfo-ingress.yaml
+$ cd ~/githubrepo/ktds-edu
+
+# 15.bookinfo-ingress.yaml 파일 확인
+$ cat ./istio/bookinfo/15.bookinfo-ingress.yaml
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: bookinfo-ingress
+  name: bookinfo-ingress-user01          <-- 각자 계정명으로 변경 필요
   namespace: istio-ingress
   annotations:
     kubernetes.io/ingress.class: "traefik"
 spec:
   rules:
-  - host: "bookinfo.user01.ktcloud.211.254.212.105.nip.io"
+  - host: "bookinfo.user01.ktcloud.211.254.212.105.nip.io"    <-- 각자 계정명으로 변경 필요
     http:
       paths:
       - path: /
@@ -936,6 +1055,22 @@ spec:
 ```
 
 
+
+### (5) clean up
+
+```sh
+$ alias ku='kubectl -n user01'
+
+$ cd ~/githubrepo/ktds-edu
+
+$ ku delete -f ./istio/bookinfo/11.bookinfo.yaml
+$ ku delete -f ./istio/bookinfo/12.bookinfo-gw-vs.yaml
+$ ku delete -f ./istio/bookinfo/15.bookinfo-ingress.yaml
+
+
+
+$ ku get all
+```
 
 
 
