@@ -838,8 +838,6 @@ reviews        ClusterIP   10.43.63.134    <none>        9080/TCP   25s
 
 
 
-
-
 - 확인
   - ratings container 에서 productpage 를 호출하는 테스트
 
@@ -927,7 +925,7 @@ bookinfo   ["bookinfo-gateway"]   ["*"]   11s
 
 #### Ingress
 
-bookinfo host 를 각자 계정명으로 변경한후 적용하자.
+bookinfo host 를 각자 계정명으로 변경한 후 적용하자.
 
 ```sh
 
@@ -960,16 +958,46 @@ spec:
 # ingress 는 istio-ingress namespace 에서 실행해야 한다.
 
 # istio-ingressgateway controller 존재하는 곳에 위치해야 한다.
-$ kubectl -n istio-ingress create -f 15.bookinfo-ingress.yaml
+$ kubectl -n istio-ingress create -f ./istio/bookinfo/15.bookinfo-ingress.yaml
 
 
 
 ## 확인
 $ curl -s "http://bookinfo.user01.ktcloud.211.254.212.105.nip.io/productpage" | grep -o "<title>.*</title>"
+
 <title>Simple Bookstore App</title>    <-- 나오면 정상
 
 
 ```
+
+
+
+
+
+```sh
+
+
+## istio-ingress 검증
+$ curl localhost:31611/productpage -H "Host:bookinfo.user01.ktcloud.211.254.212.105.nip.io"
+
+<-- ok 합격
+
+
+
+## istio-ingress 검증
+$ curl localhost:31611/productpage -H "Host:bookinfo.user01.ktcloud.211.254.212.105.nip.io"
+
+
+
+```
+
+
+
+
+
+
+
+
 
 
 
@@ -1065,7 +1093,7 @@ $ cd ~/githubrepo/ktds-edu
 
 $ ku delete -f ./istio/bookinfo/11.bookinfo.yaml
 $ ku delete -f ./istio/bookinfo/12.bookinfo-gw-vs.yaml
-$ ku delete -f ./istio/bookinfo/15.bookinfo-ingress.yaml
+$ kubectl -n istio-ingress delete -f ./istio/bookinfo/15.bookinfo-ingress.yaml
 
 
 
