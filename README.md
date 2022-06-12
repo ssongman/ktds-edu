@@ -149,7 +149,7 @@
 - App 생성(ArgoCD UI에서)
 - App 생성(ArgoCD CLI 이용)
 - Deploy (Sync) 및 접속확인
-- Git repo와의 Sync 이해 (Scale Out 적용)
+- Git repo와의 Sync 이해 (Scale Out 적용) 
 
 
 

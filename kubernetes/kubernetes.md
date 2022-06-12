@@ -1021,7 +1021,7 @@ Usage: curl [options...] <url>
 
 
 # 확인
-u$ ku get pod
+$ ku get pod
 NAME                       READY   STATUS    RESTARTS   AGE
 userlist-c78d76c78-dntfx   1/1     Running   0          9m18s
 curltest                   1/1     Running   0          2m49s
@@ -1048,7 +1048,7 @@ $ curl 10.42.0.10:8181/users/1
 
 
 
-- local 에서 실행
+- master node에서 실행
 
 ```sh
 $ ku exec -it curltest -- curl 10.42.0.10:8181/users/1
@@ -1057,13 +1057,13 @@ $ ku exec -it curltest -- curl 10.42.0.10:8181/users/1
 
 
 
-userlist pod 내에서 실행한 결과와 curltest pod 에서 실행한 결과, 그리고 local 에서 실행한  결과가 모두 동일하다.
+userlist pod 내에서 실행한 결과와 curltest pod 에서 실행한 결과, 그리고 node 에서 실행한  결과가 모두 동일하다.
 
 cluster 내에 내부 network 개념을 이해하는 중요한 예제이니 꼭 이해하자.
 
 
 
-하지만 userlist pod 가 2개 이상일때 어떻게 주소를 찾아야 하며 어떻게 접근해야 할까???
+하지만 userlist pod 가 2개 이상일때 어떻게 주소를 찾아야 하며 어떻게 접근하고 어떻게 부하분산을 할까?
 
 그 솔루션이 바로 kubernetes service 라는 객체 이다.
 
@@ -1150,7 +1150,7 @@ $ curl 10.43.240.205/users/1
 
 ### (4) Scale Out
 
-
+userlist pod 갯수를 늘려보자.
 
 ```sh
 $ ku get deploy
@@ -1340,7 +1340,7 @@ userlist-ingress   <none>   userlist.songlab.co.kr   172.22.253.23   80      21s
 
 
 
-- local 에서 확인
+- master node 에서 확인
 
 traefik node port 를 아래에 삽입하여 curl 테스트 해보자.
 
@@ -1356,11 +1356,13 @@ $ curl http://localhost:32423/users/1 -H "Host:userlist.songlab.co.kr"
 
 ```
 
-이제 userlist 에 접근할때 local 에서도 직접 접근할 수 있게 되었다. 
+이제 userlist 에 접근할때 node 에서도 직접 접근할 수 있게 되었다. 
 
-위 service 테스트시 userlist 접근을 위해서는 cluster inner network 에 진입을 위해서 curltest pod 내에서 테스트를 진행했었다. 
+이전에는 userlist 접근을 위해서는 cluster inner network 에 진입을 위해서 curltest pod 내에서 테스트를 진행했었다.  
 
-이제는 ingress 라는 오브젝가 외부와의 접근을 연결시켜주기 때문에 굳이 curltest pod 가 필요없으며 local 에서 직접 테스트 할 수 있다.
+이제는 ingress 라는 오브젝가 외부와의 접근을 연결시켜주기 때문에 굳이 curltest pod 가 필요 없으며 node에서 직접 접근할 수 있다.
+
+다시 말해서 개인 pc의 hosts 파일에 위 host name 을 등록해 주면 크롬과 같은 브라우저에서 접근이 가능하다는 의미이다.
 
 하지만 이 또한 완전환 모습은 아니다.  
 
@@ -1400,7 +1402,7 @@ $ ku delete -f ./kubernetes/userlist/15.userlist-ingress-local.yaml
 
 익숙한 ssh terminal(mobaxterm 등) 을 이용해서 KT Cloud Master node에 접근한다.
 
-접속정보: 별도 공지
+접속정보: <사용자별 계정 매핑 정보> 참고
 
 
 
