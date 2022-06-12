@@ -30,7 +30,7 @@
 
 
 
-## 2) 실습 환경 준비(개인PC)
+## 2) 실습 환경 준비(KT Cloud)
 
 - KT Cloud 이해
 - ssl 접속 확인
@@ -75,7 +75,6 @@
 
 ## 4) K3s 실습(KT Cloud)
 
-- k3s 설치(참고)
 - 개인 Namespace 확인
 - Sample app deploy
 
