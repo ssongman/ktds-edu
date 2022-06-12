@@ -23,7 +23,7 @@
 
 - 실습에 필요한 tool 준비
   - mobaxterm 확인
-  - wsl
+  - wsl2
   - docker desktop 확인
 
 - 교육자료 Download
