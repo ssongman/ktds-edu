@@ -42,7 +42,7 @@
 
 
 
-# 2. Class1: kubernetes맛보기 ( [가이드 문서 보기](./kubernetes/kubernetes.md) )  
+# 2. Class1: kubernetes 맛보기 ( [가이드 문서 보기](./kubernetes/kubernetes.md) )  
 
 
 

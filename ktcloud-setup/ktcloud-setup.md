@@ -1,12 +1,8 @@
-#  Server Setting
-
-# 서비스메쉬와 ArgoCD기반 CICD(6/13))
+#  < KT Cloud Setup >
 
 
 
 # 1. 서버생성
-
-
 
 
 
