@@ -15,7 +15,7 @@
 
 
 
-# 1. 시작전에 ( [가이드 문서보기](./beforebegin/beforebegin.md) )  
+# 1. 시작전에 ( [가이드 문서 보기](./beforebegin/beforebegin.md) )  
 
 
 
@@ -42,7 +42,7 @@
 
 
 
-# 2. Class1: kubernetes맛보기 ( [가이드 문서보기](./kubernetes/kubernetes.md) )  
+# 2. Class1: kubernetes맛보기 ( [가이드 문서 보기](./kubernetes/kubernetes.md) )  
 
 
 
@@ -85,7 +85,7 @@
 
 
 
-# 3. Class2: ServiceMesh ( [가이드 문서보기](./istio/ServiceMesh.md) )  
+# 3. Class2: ServiceMesh ( [가이드 문서 보기](./istio/ServiceMesh.md) )  
 
 
 
@@ -133,7 +133,7 @@
 
 
 
-# 4. Class3: ArgoCD ( [가이드 문서보기](./argocd/argocd.md) )  
+# 4. Class3: ArgoCD ( [가이드 문서 보기](./argocd/argocd.md) )  
 
 
 

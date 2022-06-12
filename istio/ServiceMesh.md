@@ -4,19 +4,14 @@
 
 
 
-
-
-
-
 # 1. Service Mesh
 
 ## 1) 서비스메쉬란?
 
-서비스 메시는 서비스간의 통신을 제어하고 표시하고 관리할 수 있도록 하는데 특화된 마이크로 서비스를 위한 인프라 계층에 존재하는 방식이다. 기존의 서비스아키텍처의 호출이 직접 호출 방식이었다면, 서비스 메시에서느이 호출은 인프라계층의 proxy 를 통해 이뤄진다.
-
-서비스 메시를 구성하는 개벌 proxy 는 서비스 내부가 아니라 각 서비스와 함께 실행되므로 sidecar 라고 부르기도 한다.
-
-각 서비스에 inject 된 이러한 sidecarproxy 들이 모여 서 Mesh Network 를 형성한다.
+- 서비스 메시는 서비스간의 통신을 제어 및 관리하는 방식을 제어하는 방법임
+- 서비스간 호출은 인프라계층의 proxy 를 통해 이루어짐
+- 서비스 메시를 구성하는 개벌 proxy는 서비스 내부가 아니라 각 서비스와 함께 실행되므로 sidecar 라고 부름
+- 각 서비스에 inject 된 이러한 sidecar proxy 들이 모여 서 Mesh Network 를 형성
 
 
 
@@ -24,22 +19,18 @@
 
 
 
-### (2) 서비스메쉬 특징
+## 2) 서비스메쉬 특징
 
-- MicroService Architecture를 적용한 시스템의 내부 통신이 Mesh 네트워크의 형태를 띄는 것에 빗대어 Service Mesh로 명명됨
-
-- Service Mesh 는 서비스 간 통신을 추상화하여 안전하고, 빠르고, 신뢰할 수 있게 만드는 전용 InfraStructure Layer임
-- 추상화를 통해 복잡한 내부 네트워크를 제어하고, 추적하고, 내부 네트워크 관련 로직을 추가함으로써 안정성, 신뢰성, 탄력성, 표준화, 가시성, 보안성 등을 확보함
-
-- Service Mesh 의 구현체인 경량화 Proxy를 통해 다양한 Routing Rules, circuit breaker 등 공통기능을 설정할 수 있음
-
-- A/B 테스트, 카나리아 배포, 속도 제한, 액세스 제어, 암호화 및 종단 간 인증과 같은 보다 복잡한 운영 요구 사항도 해결할 수 있음.
+- 서비스 메시는 InfraStructure Layer에 존재함
+- 서비스간 통신의 추상화를 통해 복잡한 내부 네트워크를 제어, 추적, 관리함
+- 서비스 메시의 구현체인 경량화 Proxy를 통해 다양한 Routing Rules, circuit breaker 등의 기능을 설정할 수 있음
+- A/B 테스트, 카나리아 배포, 속도 제한, 액세스 제어, 암호화 및 종단 간 인증과 같은 보다 복잡한 운영 요구 사항도 해결할 수 있음
 
 
 
-### (3) 서비스 메쉬 주요기능
+## 3) 서비스 메쉬 주요기능
 
-- 요청 라우팅 제어
+- 트래픽 라우팅 제어
 - 서킷브레이커
 - 로드발란싱(부하분산알고리즘)
 - 보안기능(TLS, 암호화, 인증 및 권한 부여)
@@ -85,65 +76,31 @@ Istio는 서비스 코드 변경이 거의 또는 전혀 없이 로드 밸런싱
 
 
 
-### Istio 서비스 메시의 이점
+## 3) Istio 서비스 메시의 이점
 
-##### 일관된 서비스 네트워킹 달성
-
-네트워킹 운영자는 개발자 오버헤드를 추가하지 않고도 모든 서비스의 네트워킹을 일관성 있게 관리할 수 있습니다.
-
+- Istio 이점을 통한 서비스 보호
+  - 보안 운영자는 인증, 승인, 암호화를 비롯한 서비스 간 보안을 쉽게 구현할 수 있다.
 
 
-##### Istio 이점을 통한 서비스 보호
+- 애플리케이션 성능 향상
+  - Canary 배포 등을 이용하여 애플리케이션을 심도 있게 파악하여 성능을 개선하기 위해 집중해야 하는 부분을 파악할 수 있다.
 
-보안 운영자는 인증, 승인, 암호화를 비롯한 서비스 간 보안을 쉽게 구현할 수 있습니다.
+- 안전한 클라우드 기반 앱
+  - 강력한 ID 기반 인증, 승인, 암호화를 통해 애플리케이션 수준에서 보안을 강화할 수 있다.
 
-
-
-##### 애플리케이션 성능 향상
-
-카나리아 롤아웃과 같은 권장사항을 구현하고 애플리케이션을 심도 있게 파악하여 성능을 개선하기 위해 집중해야 하는 부분을 파악할 수 있습니다.
-
+- 효율적인 트래픽 관리
+  - 다양한 라우팅 규칙, 재시도, 장애 조치, 결함 주입으로 트래픽 동작을 세밀하게 제어할 수 있다.
 
 
-##### 안전한 클라우드 기반 앱
-
-강력한 ID 기반 인증, 승인, 암호화를 통해 애플리케이션 수준에서 보안을 강화할 수 있습니다.
-
-
-
-##### 효율적인 트래픽 관리
-
-다양한 라우팅 규칙, 재시도, 장애 조치, 결함 주입으로 트래픽 동작을 세밀하게 제어할 수 있습니다.
-
-
-
-##### 서비스 메시 모니터링
-
-Istio의 강력한 추적, 모니터링, 로깅 기능으로 서비스 성능이 업스트림에 미치는 영향을 자세히 파악할 수 있습니다.
-
-
-
-##### Kubernetes 및 가상 머신을 통한 간편한 배포
-
-Istio는 컨테이너 및 가상 머신을 포함한 기존 워크로드와 최신 워크로드 모두에 대해 가시성과 네트워크 제어를 제공합니다.
-
-
-
-##### 고급 기능으로 부하 분산 간소화
-
-클라이언트 기반 라우팅, 카나리아 롤아웃과 같은 고급 기능과 함께 모든 트래픽에 자동화된 부하 분산을 사용할 수 있습니다.
-
-
-
-##### 정책 시행
-
-액세스 제어, 비율 제한, 할당량을 지원하는 플러그인 가능한 정책 레이어 및 구성 API를 사용하여 정책을 시행할 수 있습니다.
+- 서비스 메시 모니터링
+  - Istio의 강력한 추적, 모니터링, 로깅 기능으로 서비스 성능이 업스트림에 미치는 영향을 자세히 파악할 수 있다.
 
 
 
 
 
-## 3) Istio 주요 기능
+
+## 4) Istio 주요 기능
 
 참조링크: https://istio.io/latest/docs/tasks/
 
@@ -161,27 +118,21 @@ A/B testing, canary 베포 및 백분율 기반 트래픽 분할을 통한 단�
 
 ### (2) Observability
 
-서비스가 복잡해짐에 따라 동작과 성능을 이해하는 것이 어려워진다. 
+Istio는 서비스 메시 내의 모든 통신에 대한 상세한 원격 메트릭을 생성한다.
 
-Istio는 서비스 메시 내의 모든 통신에 대한 상세한 원격 metric을 생성하여
+이 원격 메트릭은 서비스 동작의 상태 값을 제공하여 운영자가 문제를 해결하고 애플리케이션을 유지 관리하고 최적화할 수 있도록 한다. 
 
-이 원격 측정은 서비스 동작의 관찰 가능성을 제공하여 운영자가 문제를 해결하고 애플리케이션을 유지 관리하고 최적화할 수 있도록 합니다. 더군다나 애플리케이션을 변경할 필요 없이 이 계측을 거의 모두 사용할 수 있습니다. 운영자는 Istio를 통해 모니터링되는 서비스가 상호 작용하는 방식을 철저히 이해할 수 있습니다.
-
-Istio의 원격 측정에는 자세한 메트릭, 분산 추적 및 전체 액세스 로그가 포함됩니다. 
-
-Istio를 사용하면 전체적인 서비스 메시 Observability 이점을 을 얻을 수 있습니다.
+Istio를 사용하면 전체적인 서비스 메시 Observability 이점을 을 얻을 수 있다.
 
 
 
 ### (3) Security capabilities
 
-마이크로서비스는 메시지 가로채기(man-in-the-middle) 공격에 대한 보호, 유연한 액세스 제어, 감사 도구 및 상호 TLS를 비롯한 특정 보안 요구 사항이 있습니다. 
+Istio에는 감사 도구 및 상호 TLS를 비롯한 보안 요구사항을 해결할 수 있는 포괄적인 보안 솔루션이 포함되어 있다. 
 
-Istio에는 운영자가 이러한 모든 문제를 해결할 수 있는 포괄적인 보안 솔루션이 포함되어 있습니다. 
+강력한 정책, 투명한 TLS 암호화, AAA(인증, 권한 부여 및 감사) 도구를 제공하여 서비스와 데이터를 보호한다.
 
-강력한 ID, 강력한 정책, 투명한 TLS 암호화, AAA(인증, 권한 부여 및 감사) 도구를 제공하여 서비스와 데이터를 보호합니다.
-
-Istio의 보안 모델은 기본 보안을 기반으로 하며, 신뢰할 수 없는 네트워크에서도 보안 중심 애플리케이션을 배포할 수 있도록 심층 방어를 제공하는 것을 목표로 합니다.
+Istio의 보안 모델은 기본 보안을 기반으로 하며, 신뢰할 수 없는 네트워크에서도 보안 중심 애플리케이션을 배포할 수 있도록 심층 방어를 제공하는 것을 목표로 한다.
 
 
 
@@ -191,11 +142,11 @@ Istio의 보안 모델은 기본 보안을 기반으로 하며, 신뢰할 수 �
 
 # 3. 실습(개인PC)
 
+WSL 환경에서 istio 를 설치해 보자.
 
 
 
-
-## 1) helm 설치
+## 1) helm install
 
 쿠버네티스에 서비스를 배포하는 방법이 다양하게 존재하는데 그중 대표적인 방법중에 하나가 Helm chart 방식 이다.
 
@@ -207,11 +158,7 @@ Istio의 보안 모델은 기본 보안을 기반으로 하며, 신뢰할 수 �
 
 보통 애플리케이션 이미지를 새로 빌드하게 되면, 빌드 넘버가 변경된다. 이렇게 되면 새로운 이미지를 사용하기 위해 Kubernetes Manifest의 Image도 변경되어야 한다.  하지만 Kubernetes Manifest를 살펴보면, 이를 변경하기 쉽지 않다. Image Tag가 별도로 존재하지 않고 Image 이름에 붙어있기 때문입니다. 이를 자동화 파이프라인에서 변경하려면, sed 명령어를 쓰는 등의 힘든 작업을 해야 한다.
 
-Image Tag는 굉장히 단적인 예제이다.  이 외에 도 Configmap 등 배포시마다 조금씩 다른 형태의 데이터를 배포해야 할때 Maniifest 파일 방식은 너무나 비효율적이다.  
-
-Helm Chart 는 이런 어려운 점을 모두 해결한 훌륭한 도구이다.
-
-비단,  사용자가 개발한 AP 뿐아니라 kubernetes 에 배포되는 오픈소스 기반 솔루션들은 거의 모두 helm chart 를 제공한다.
+Image Tag는 굉장히 단적인 예제이다.  이 외에 도 Configmap 등 배포시마다 조금씩 다른 형태의 데이터를 배포해야 할때 Maniifest 파일 방식은 너무나 비효율적이다.  Helm Chart 는 이런 어려운 점을 모두 해결한 훌륭한 도구이다.  비단,  사용자가 개발한 AP 뿐아니라 kubernetes 에 배포되는 오픈소스 기반 솔루션들은 거의 모두 helm chart 를 제공한다.
 
 Istio 도 마찬가지로 helm 배포를 위한 chart 를 제공해 준다.
 
@@ -225,11 +172,12 @@ Istio 도 마찬가지로 helm 배포를 위한 chart 를 제공해 준다.
 
 
 
-### (2) helm install
+### (2) helm client download
 
 helm client 를 local 에 설치해 보자.
 
 ```sh
+# root 권한으로 수행
 ## 임시 디렉토리를 하나 만들자.
 $ mkdir -p ~/helm/
 $ cd ~/helm/
@@ -241,28 +189,18 @@ $ mv linux-amd64/helm /usr/local/bin/helm
 $ ll /usr/local/bin/helm*
 -rwxr-xr-x 1 song song 46182400 May 19 01:45 /usr/local/bin/helm*
 
-```
-
-
-
-- 확인
-
-```sh
+# 확인
 $ helm version
-WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/song/.kube/config
-WARNING: Kubernetes configuration file is world-readable. This is insecure. Location: /home/song/.kube/config
 version.BuildInfo{Version:"v3.9.0", GitCommit:"7ceeda6c585217a19a1131663d8cd1f7d641b2a7", GitTreeState:"clean", GoVersion:"go1.17.5"}
 
-$ helm -n song ls
-WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/song/.kube/config
-WARNING: Kubernetes configuration file is world-readable. This is insecure. Location: /home/song/.kube/config
+$ helm -n user01 ls
 NAME    NAMESPACE       REVISION        UPDATED STATUS  CHART   APP VERSION
 
 ```
 
 
 
-- bitnami repo 를 추가
+- [참고]bitnami repo 를 추가
 
   유명한 charts 들이모여있는 bitnami repo 를 추가해 보자.
 
@@ -294,8 +232,6 @@ deployment.apps/nginx   0/1     1            0           4s
 NAME                              DESIRED   CURRENT   READY   AGE
 replicaset.apps/nginx-f9d57f644   1         1         0       4s
 
-
-
 # 설치 삭제
 $ helm -n user01 delete nginx
 
@@ -312,10 +248,16 @@ No resources found in user01 namespace.
 ### (1)  helm repo add
 
 ```sh
+# root 권한으로
 $ helm repo add istio https://istio-release.storage.googleapis.com/charts
 
+# 추가된 repo 목록 확인
+$ helm repo list
+
+# remote repo 로 부터 유효한 chart update 
 $ helm repo update
 
+# chart 검색
 $ helm search repo istio
 NAME                                    CHART VERSION   APP VERSION     DESCRIPTION
 bitnami/wavefront-adapter-for-istio     1.1.6           0.1.5           Wavefront Adapter for Istio is an adapter for I...
@@ -333,7 +275,7 @@ istio/gateway                           1.13.4          1.13.4          Helm cha
 
 ```sh
 # 2. create ns
-$ k create namespace istio-system
+$ kubectl create namespace istio-system
 ```
 
 
@@ -423,7 +365,8 @@ istio-base      istio-system    1               2022-06-11 18:42:06.172184 +0900
 Controle Plane역할을 수행하는 istiod 를 설치하자.
 
 ```sh
-$ helm -n istio-system install istiod istio/istiod --wait
+$ helm -n istio-system install istio-istiod istio/istiod --wait
+
 ...
 TEST SUITE: None
 NOTES:
@@ -477,6 +420,7 @@ $ tar -xzvf istiod-1.14.1.tgz
 # local chart로 직접 설치진행
 $ helm -n istio-system install istio-istiod ~/istio/istiod
 
+
 $ helm -n istio-system ls
 NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART           APP VERSION
 istio-base      istio-system    1               2022-06-11 18:42:06.172184 +0900 KST    deployed        base-1.14.1     1.14.1
@@ -491,7 +435,7 @@ istio-istiod    istio-system    1               2022-06-11 18:50:18.0303375 +090
 ### (5) clean up
 
 ```sh
-$ helm -n istio-system delete istiod
+$ helm -n istio-system delete istio-istiod
 $ helm -n istio-system delete istio-base
 ```
 

@@ -472,8 +472,7 @@ Rancher 에서 만든 kubernetes 경량화 제품
 - k3s install
 
 ```sh
-## root password 필요  
-
+## root 권한으로 
 $ su
 
 $ curl -sfL https://get.k3s.io | sh -
@@ -506,21 +505,21 @@ Client 와 Server Version 이 각각 보인다면 설치가 잘 된 것이다.
 
 ```sh
 
-# cluster 수동 기동
-$ sudo k3s server &
+# root 권한으로
+
+$ k3s server &
 …
 COMMIT 
 …
 
 # k3s 데몬 확인
-$ sudo ps -ef|grep k3s
+$ ps -ef|grep k3s
 root         590     405  0 13:05 pts/0    00:00:00 sudo k3s server
 root         591     590 76 13:05 pts/0    00:00:26 k3s server
 root         626     591  5 13:05 pts/0    00:00:01 containerd -c /var/lib/rancher/k3s/agent/etc/containerd/config.toml -a /run/k3s/containerd/containerd.sock --state /run/k3s/containerd --root /var/lib/rancher/k3s/agent/containerd
 ...
 
-$ sudo k3s kubectl version
-[sudo] password for song:
+$ k3s kubectl version
 Client Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.6+k3s1", GitCommit:"418c3fa858b69b12b9cefbcff0526f666a6236b9", GitTreeState:"clean", BuildDate:"2022-04-28T22:16:18Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
 Server Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.6+k3s1", GitCommit:"418c3fa858b69b12b9cefbcff0526f666a6236b9", GitTreeState:"clean", BuildDate:"2022-04-28T22:16:18Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
 ```
@@ -541,19 +540,16 @@ local 에서 직접 kubctl 명령 실행을 위해서는 ~/.kube/config 에 연�
 
 ```sh
 ## root 로 실행
-
 $ su
 
 $ mkdir -p ~/.kube
 
-$ sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+$ cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
 
-
-# 모든사용자에게 읽기 권한 부여
-$ sudo chmod +r /etc/rancher/k3s/k3s.yaml ~/.kube/config
+# 자신만 읽기/쓰기 권한 부여
+$ chmod 600 ~/.kube/config
 
 ## 확인
-## user 권한으로도 사용 가능
 $ kubectl version
 Client Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.6+k3s1", GitCommit:"418c3fa858b69b12b9cefbcff0526f666a6236b9", GitTreeState:"clean", BuildDate:"2022-04-28T22:16:18Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
 Server Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.6+k3s1", GitCommit:"418c3fa858b69b12b9cefbcff0526f666a6236b9", GitTreeState:"clean", BuildDate:"2022-04-28T22:16:18Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
