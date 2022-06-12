@@ -13,9 +13,36 @@
 
 
 
-# 1. Class1: kubernetes ( [가이드 문서보기](./kubernetes/kubernetes.md) )  
 
 
+# 1. 시작전에 ( [가이드 문서보기](./beforebegin/beforebegin.md) )  
+
+
+
+## 1) 실습 환경 준비(개인PC)
+
+- 실습에 필요한 tool 준비
+  - mobaxterm 확인
+  - wsl
+  - docker desktop 확인
+
+- 교육자료 Download
+
+
+
+## 2) 실습 환경 준비(개인PC)
+
+- KT Cloud 이해
+- ssl 접속 확인
+- 수강생별 계정 매핑
+- 교육자료 Download
+
+
+
+
+
+
+# 2. Class1: kubernetes맛보기 ( [가이드 문서보기](./kubernetes/kubernetes.md) )  
 
 
 
@@ -29,20 +56,7 @@
 
 
 
-
-
-## 2) 실습 환경 설명
-
-- mobaxterm
-- wsl
-- docker desktop 확인
-- KT Cloud 서버
-
-
-
-
-
-## 3) Docker 실습
+## 2) Docker 실습
 
 - sample app 실행
 - Scale Out
@@ -51,7 +65,7 @@
 
 
 
-## 4) k3s 실습(개인PC)
+## 3) k3s 실습(개인PC)
 
 - k3s 란?
 - wsl 에 k3s 설치
@@ -59,7 +73,7 @@
 
 
 
-## 5) K3s 실습(KT Cloud)
+## 4) K3s 실습(KT Cloud)
 
 - k3s 설치(참고)
 - 개인 Namespace 확인
@@ -71,7 +85,7 @@
 
 
 
-# 2. Class2: ServiceMesh ( [가이드 문서보기](./istio/ServiceMesh.md) )  
+# 3. Class2: ServiceMesh ( [가이드 문서보기](./istio/ServiceMesh.md) )  
 
 
 
@@ -119,7 +133,7 @@
 
 
 
-# 3. Class3: ArgoCD ( [가이드 문서보기](./argocd/argocd.md) )  
+# 4. Class3: ArgoCD ( [가이드 문서보기](./argocd/argocd.md) )  
 
 
 
