@@ -280,7 +280,7 @@ $ kubectl create namespace istio-system
 
 
 
-### (3) istio crd 설치
+### (3) install istio crd 설치
 
 ```sh
 $ helm -n istio-system install istio-base istio/base
@@ -365,7 +365,7 @@ istio-base      istio-system    1               2022-06-11 18:42:06.172184 +0900
 Controle Plane역할을 수행하는 istiod 를 설치하자.
 
 ```sh
-$ helm -n istio-system install istio-istiod istio/istiod --wait
+$ helm -n istio-system install istio-istiod istio/istiod
 
 ...
 TEST SUITE: None
@@ -373,9 +373,9 @@ NOTES:
 "istiod" successfully installed!            <--- 이런 로그가 나오면 성공
 
 ## 확인
-$ helm -n istio-system status istiod
+$ helm -n istio-system status istio-istiod
 
-$ helm -n istio-system get all istiod
+$ helm -n istio-system get all istio-istiod
 
 
 
@@ -434,6 +434,8 @@ istio-istiod    istio-system    1               2022-06-11 18:50:18.0303375 +090
 
 ### (5) clean up
 
+모든 테스트를 마치고 istio를 최종 삭제할때 아래 명령으로 삭제 하자.
+
 ```sh
 $ helm -n istio-system delete istio-istiod
 $ helm -n istio-system delete istio-base
@@ -445,15 +447,21 @@ $ helm -n istio-system delete istio-base
 
 
 
+### (1) userlist pod 실행
+
 1교시 kubernetes 실습때 수행했던 userlist pod 를 다시 확인해 보자.
 
 ```sh
-$ ku create deploy userlist --image=ssongman/userlist:v1
+$ alias ku='kubectl -n user01'
 
-
+# userlist pod 확인
 $ ku get pod
 NAME                        READY   STATUS    RESTARTS   AGE
 userlist-75c7d7dfd7-7tf7g   1/1     Running   0          6s
+
+
+# 존재하지 않는다면 아래명령으로 실행
+$ ku create deploy userlist --image=ssongman/userlist:v1
 ```
 
 
@@ -472,7 +480,7 @@ userlist-75c7d7dfd7-7tf7g   1/1     Running   0          6s
 
 
 
-### (1) sidecar inject 설정
+### (2) sidecar inject 설정
 
 먼저 적용예시를 살펴보자.
 
@@ -510,6 +518,8 @@ labels 항목에 istio 관련 내용이 없음을 확인한다.
 
 
 - 적용(label 추가)
+  - 자기 계정 Namespce 로 변경하자.
+
 
 ```sh
 $ kubectl label namespace user01 istio-injection=enabled
@@ -540,7 +550,7 @@ status:
 
 
 
-### (2) pod 적용을 위한 재기동
+### (3) pod 적용을 위한 재기동
 
 적용을 희망하는 pod 를 재기동시킨다.  재기동은 pod 를 삭제하게 되면 새롭게 running 된다.
 

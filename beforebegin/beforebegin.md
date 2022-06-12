@@ -88,7 +88,8 @@ command 창에서 wsl 명령으로 설치여부를 확인 할 수 있다.
 실행하는 방법은 아래와 같이 다양하다. 본인이 편한 방법을 선택하자.
 
 1. cmd 창에서 바로실행
-   - 위 command 창에서 wsl 명령을 입력하면 바로 default linux 가 실행된다.
+   - cmd 창에서 `wsl` 명령을 입력하면 바로 default linux 가 실행된다.
+   - `wsl -u root` 명령으로 root 로 실행 할 수 있다.
 
 ![image-20220601193219422](beforebegin.assets/image-20220601193219422.png)
 
