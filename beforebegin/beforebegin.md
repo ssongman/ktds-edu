@@ -43,11 +43,17 @@ command 창에서 wsl 명령으로 설치여부를 확인 할 수 있다.
 
 ![image-20220601193023175](beforebegin.assets/image-20220601193023175.png)
 
+
+
 - 만약 version 이 1 이라면 아래와 같이 update 한다.
-
-
+  - 참고링크
+    - https://docs.microsoft.com/en-us/windows/wsl/install
+    - https://docs.microsoft.com/ko-kr/windows/wsl/install-manual
+  - PowerShell 실행
 
 ```sh
+> wsl --install
+
 > wsl --set-version Ubuntu 2
 
 # 기본값으로 설정 변경해도 됨
@@ -59,6 +65,19 @@ command 창에서 wsl 명령으로 설치여부를 확인 할 수 있다.
 ```
 
 
+
+- linux 가 설정안되어 있다면
+
+```sh
+
+1. Microsoft Store를 열고 즐겨 찾는 Linux 배포를 선택합니다.
+   - Ubuntu 18.04.5 LTS
+
+2. 배포 페이지에서 "다운로드"를 선택합니다.
+
+3. 사용자 계정 및 암호 생성
+
+```
 
 
 
@@ -75,9 +94,9 @@ command 창에서 wsl 명령으로 설치여부를 확인 할 수 있다.
 
 
 
-2. winterm 으로 실행하는 방법
-   - winterm 실행
-   - 위 화면과 동일
+2. windows 터미널 으로 실행하는 방법
+   - windows 터미널 실행
+   - windows 터미널 설치 : https://docs.microsoft.com/ko-KR/windows/terminal/get-started
 
 3. mobaxterm 에서 실행
    - session > WSL 실행
