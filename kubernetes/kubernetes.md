@@ -2,14 +2,6 @@
 
 
 
-
-
-[TOC]
-
-
-
-
-
 # 1. Kubernetes 란 무엇인가?
 
 
@@ -18,17 +10,22 @@
 
 ## 1) 개요
 
-쿠버네티스는 컨테이너화된 워크로드와 서비스를 관리하기 위한 이식성이 있고, 확장가능한 오픈소스 플랫폼이다. 쿠버네티스는 선언적 구성과 자동화를 모두 용이하게 해준다. 쿠버네티스는 크고, 빠르게 성장하는 생태계를 가지고 있다. 쿠버네티스 서비스, 기술 지원 및 도구는 어디서나 쉽게 이용할 수 있다.
 
-Kubernetes란 명칭은 키잡이(helmsman)나 파일럿을 뜻하는 그리스어에서 유래했다. K8s라는 표기는 "K"와 "s"와 그 사이에 있는 8글자를 나타내는 약식 표기이다. 구글이 2014년에 쿠버네티스 프로젝트를 오픈소스화했다. 쿠버네티스는 프로덕션 워크로드를 대규모로 운영하는 [15년 이상의 구글 경험](https://kubernetes.io/blog/2015/04/borg-predecessor-to-kubernetes/)과 커뮤니티의 최고의 아이디어와 적용 사례가 결합되어 있다.
+
+- 쿠버네티스는 컨테이너화된 워크로드와 서비스를 관리하기 위한 이식성이 좋고, 확장가능한 오픈소스 플랫폼임
+
+- 쿠버네티스는 선언적 구성과 자동화를 모두 용이함
+- 빠르게 성장하는 생태계를 가지고 있음
+- 서비스, 기술 지원 및 도구는 어디서나 쉽게 이용할 수 있음
+- Kubernetes란 명칭은 키잡이(helmsman)나 파일럿을 뜻하는 그리스어에서 유래
+- K8s라는 표기는 "K"와 "s"와 그 사이에 있는 8글자를 나타내는 약식 표기
+- 구글이 2014년에 쿠버네티스 프로젝트를 오픈소스함
 
 
 
 
 
 ## 2) k8s 이전에는?
-
-
 
 
 
@@ -67,12 +64,38 @@ Kubernetes란 명칭은 키잡이(helmsman)나 파일럿을 뜻하는 그리스�
 
 
 
-- **서비스 디스커버리와 로드 밸런싱** 쿠버네티스는 DNS 이름을 사용하거나 자체 IP 주소를 사용하여 컨테이너를 노출할 수 있다. 컨테이너에 대한 트래픽이 많으면, 쿠버네티스는 네트워크 트래픽을 로드밸런싱하고 배포하여 배포가 안정적으로 이루어질 수 있다.
-- **스토리지 오케스트레이션** 쿠버네티스를 사용하면 로컬 저장소, 공용 클라우드 공급자 등과 같이 원하는 저장소 시스템을 자동으로 탑재 할 수 있다.
-- **자동화된 롤아웃과 롤백** 쿠버네티스를 사용하여 배포된 컨테이너의 원하는 상태를 서술할 수 있으며 현재 상태를 원하는 상태로 설정한 속도에 따라 변경할 수 있다. 예를 들어 쿠버네티스를 자동화해서 배포용 새 컨테이너를 만들고, 기존 컨테이너를 제거하고, 모든 리소스를 새 컨테이너에 적용할 수 있다.
-- **자동화된 빈 패킹(bin packing)** 컨테이너화된 작업을 실행하는데 사용할 수 있는 쿠버네티스 클러스터 노드를 제공한다. 각 컨테이너가 필요로 하는 CPU와 메모리(RAM)를 쿠버네티스에게 지시한다. 쿠버네티스는 컨테이너를 노드에 맞추어서 리소스를 가장 잘 사용할 수 있도록 해준다.
-- **자동화된 복구(self-healing)** 쿠버네티스는 실패한 컨테이너를 다시 시작하고, 컨테이너를 교체하며, '사용자 정의 상태 검사'에 응답하지 않는 컨테이너를 죽이고, 서비스 준비가 끝날 때까지 그러한 과정을 클라이언트에 보여주지 않는다.
-- **시크릿과 구성 관리** 쿠버네티스를 사용하면 암호, OAuth 토큰 및 SSH 키와 같은 중요한 정보를 저장하고 관리 할 수 있다. 컨테이너 이미지를 재구성하지 않고 스택 구성에 시크릿을 노출하지 않고도 시크릿 및 애플리케이션 구성을 배포 및 업데이트 할 수 있다.
+- **서비스 디스커버리와 로드 밸런싱**
+  - 쿠버네티스는 DNS 이름을 사용하거나 자체 IP 주소를 사용하여 컨테이너를 노출할 수 있다. 컨테이너에 대한 트래픽이 많으면, 쿠버네티스는 네트워크 트래픽을 로드밸런싱하고 배포하여 배포가 안정적으로 이루어질 수 있다.
+
+- **스토리지 오케스트레이션**
+  - 쿠버네티스를 사용하면 로컬 저장소, 공용 클라우드 공급자 등과 같이 원하는 저장소 시스템을 자동으로 탑재 할 수 있다.
+
+- **자동화된 롤아웃과 롤백** 
+  - 쿠버네티스를 사용하여 배포된 컨테이너의 원하는 상태를 서술할 수 있으며 현재 상태를 원하는 상태로 설정한 속도에 따라 변경할 수 있다. 예를 들어 쿠버네티스를 자동화해서 배포용 새 컨테이너를 만들고, 기존 컨테이너를 제거하고, 모든 리소스를 새 컨테이너에 적용할 수 있다.
+
+- **자동화된 빈 패킹(bin packing)** 
+  - 컨테이너화된 작업을 실행하는데 사용할 수 있는 쿠버네티스 클러스터 노드를 제공한다. 각 컨테이너가 필요로 하는 CPU와 메모리(RAM)를 쿠버네티스에게 지시한다. 쿠버네티스는 컨테이너를 노드에 맞추어서 리소스를 가장 잘 사용할 수 있도록 해준다.
+
+- **자동화된 복구(self-healing)** 
+  - 쿠버네티스는 실패한 컨테이너를 다시 시작하고, 컨테이너를 교체하며, '사용자 정의 상태 검사'에 응답하지 않는 컨테이너를 죽이고, 서비스 준비가 끝날 때까지 그러한 과정을 클라이언트에 보여주지 않는다.
+
+- **시크릿과 구성 관리** 
+  - 쿠버네티스를 사용하면 암호, OAuth 토큰 및 SSH 키와 같은 중요한 정보를 저장하고 관리 할 수 있다. 컨테이너 이미지를 재구성하지 않고 스택 구성에 시크릿을 노출하지 않고도 시크릿 및 애플리케이션 구성을 배포 및 업데이트 할 수 있다.
+
+
+
+
+## 4) k8s 추가 자료
+
+- 유용한 자료
+  - 쿠버네티스 개념이해 
+    - https://bcho.tistory.com/1255
+    - https://bcho.tistory.com/1256
+    - https://bcho.tistory.com/1257
+
+
+
+
 
 
 
@@ -86,7 +109,7 @@ docker Container 를 활용한 실습을 통해서 얼마나 효율적인지, �
 
 ## 1) sample app 실행
 
-sample app 인 userlist 를 실행해 보자.
+wsl 환경에 접속후 sample app 인 userlist 를 실행해 보자.
 
 ```sh
 $ docker run -d --name userlist1 -p 8181:8181 ssongman/userlist:v1
@@ -168,7 +191,7 @@ load balancer 역할을 수행할 haproxy 를 Application 앞단에 두고 clien
 
 
 
-### (1) 동일network 에서 container 실행
+### (1) 동일 network 에서 container 실행
 
 위 그림과 같이 3개의 컨테이너를 각각 실행해 보자.
 
@@ -177,10 +200,8 @@ load balancer 역할을 수행할 haproxy 를 Application 앞단에 두고 clien
 - 기존 컨테이너 초기화
 
 ```sh
-
 $ docker rm -f userlist1
 $ docker rm -f userlist2
-
 ```
 
 
@@ -222,9 +243,7 @@ $ curl http://localhost:8182/users/1
 
 
 
-
-
-### (3) haproxy 구성
+### (2) haproxy 구성
 
 load balancer 역할로 haproxy 를 이용한다.
 
@@ -325,6 +344,8 @@ $ docker run -d --net my_network --name my-haproxy -p 8180:8180 -p 1936:1936 my-
 
 
 
+### (3) load balancing test
+
 - 테스트
 
 ```sh
@@ -334,11 +355,9 @@ $ curl localhost:8181/users/1
 
 
 
-
 # userlist2 call
 $ curl localhost:8182/users/1
 {"id":1,"name":"Stefanie Mitchell","gender":"F","image":"/assets/image/cat1.jpg"}
-
 
 
 
@@ -354,7 +373,7 @@ $ while true; do curl localhost:8180/users/1; sleep 1; echo; done
 
 
 
-### (9) 결론
+### (4) 결론
 
 이와 같이 Container 환경에서의 scale out 은  load balancer container(like haporxy)를 별도로 관리해야 하고 application(userlist) 이 추가될때마다 haproxy 의 config 을 재구성해야 한다.
 
@@ -378,7 +397,7 @@ backend testweb-backend
 
 결국 Container 기반의 시스템 구성은 아래와 같이 결론 내릴 수 있다.
 
-- 결론
+- 정리
 
   - 장점
 
@@ -607,6 +626,18 @@ $ source ~/env
 
 
 
+### (4) Clean up
+
+아래와 같이 간단히 k3s 를 삭제할 수 있다.
+
+```sh
+## k3s 삭제
+$ sh /usr/local/bin/k3s-killall.sh
+$ sh /usr/local/bin/k3s-uninstall.sh
+```
+
+
+
 
 
 ## 3) sample app deploy
@@ -655,8 +686,6 @@ userlist-75c7d7dfd7-kvtjh   1/1     Running             0          40s
 $ ku delete deploy userlist
 
 ```
-
-
 
 
 
@@ -814,7 +843,7 @@ cluster 내에 내부 network 개념을 이해하는 중요한 예제이니 꼭 
 
 
 
-### (3) Service
+### (4) Service
 
 
 
@@ -893,7 +922,7 @@ $ curl 10.43.240.205/users/1
 
 
 
-### (4) Scale Out
+### (5) Scale Out
 
 userlist pod 갯수를 늘려보자.
 
@@ -991,7 +1020,7 @@ $ while true; do curl userlist-svc/users/1; sleep 1; echo; done
 
 
 
-### (5) Round Robbin
+### (6) Round Robbin
 
 Round Robin 방식은 클라이언트의 요청을 단순하게 들어온 순서대로 순환을 하여 로드밸런싱을 처리하는 방법이다.
 
@@ -1005,7 +1034,7 @@ Round Robin 방식은 클라이언트의 요청을 단순하게 들어온 순서
 
 
 
-### (6) Ingress 
+### (7) Ingress 
 
 인그레스는 클러스터 내의 서비스에 대한 외부 접근을 관리하는 API 오브젝트이며, 일반적으로 HTTP를 관리한다.
 
@@ -1124,7 +1153,7 @@ $ curl http://localhost:32423/users/1 -H "Host:userlist.songlab.co.kr"
 
 
 
-### (7) clean up
+### (8) clean up
 
 ```sh
 $ cd ~/githubrepo/ktds-edu
@@ -1548,16 +1577,6 @@ $ ku delete -f ./kubernetes/userlist/11.userlist-deployment.yaml
 $ ku delete -f ./kubernetes/userlist/12.userlist-svc.yaml
 $ ku delete -f ./kubernetes/userlist/16.userlist-ingress-ktcloud.yaml
 ```
-
-
-
-
-
-
-
-
-
-
 
 
 
