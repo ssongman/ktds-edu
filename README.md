@@ -169,5 +169,23 @@
 
 
 
+# 별첨. KT Cloud Setup ( [가이드 문서 보기](./ktcloud-setup/ktcloud-setup.md) )  
 
+## 1) 서버 생성
+
+- k3s Cluster 용도 VM 생성
+- k3s 설치
+- user 생성
+
+## 2) Istio 셋팅
+
+- helm 설치
+- Istio 설치
+- Monitoring 설치
+  - Prometheus / Grafana / Kiali / Jeager 설치
+
+## 3) ArgoCD 셋팅
+
+- ArgoCD 설치
+- ArgoCD CLI 설치
 

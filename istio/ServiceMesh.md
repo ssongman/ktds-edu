@@ -370,7 +370,7 @@ $ helm -n istio-system install istio-istiod istio/istiod
 ...
 TEST SUITE: None
 NOTES:
-"istiod" successfully installed!            <--- 이런 로그가 나오면 성공
+"istio-istiod" successfully installed!            <--- 이런 로그가 나오면 성공
 
 ## 확인
 $ helm -n istio-system status istio-istiod

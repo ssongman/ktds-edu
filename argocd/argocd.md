@@ -295,6 +295,11 @@ Argo CD CLI 설치 한다.
 최종버젼 release : https://github.com/argoproj/argo-cd/releases/latest
 
 ```sh
+# root 권한으로
+$ mkdir ~/argocd
+
+$ cd ~/argocd
+
 $ wget https://github.com/argoproj/argo-cd/releases/download/v2.3.4/argocd-linux-amd64
 
 $ chmod +x argocd-linux-amd64
