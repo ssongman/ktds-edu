@@ -340,6 +340,8 @@ Configuration file is valid
 # 실행
 $ docker run -d --net my_network --name my-haproxy -p 8180:8180 -p 1936:1936 my-haproxy
 
+$ docker run -d --net my_network --name my-haproxy -p 8180:8180  my-haproxy
+
 ```
 
 
@@ -754,6 +756,7 @@ Date: Wed, 01 Jun 2022 07:34:49 GMT
 # 200 OK 로 정상
 
 $ ku exec -it userlist-c78d76c78-dntfx -- curl localhost:8181/users/1
+$ ku exec -it userlist-c78d76c78-vh9qh  -- curl localhost:8181/users/1
 {"id":1,"name":"Ms. Drake Murphy","gender":"F","image":"/assets/image/cat1.jpg"}
 
 
@@ -811,7 +814,7 @@ curltest                   1/1     Running   0          2m56s   10.42.0.12   des
 ```sh
 $ ku exec -it curltest -- sh
 
-$ curl 10.42.0.10:8181/users/1
+$ curl 10.42.0.66:8181/users/1
 {"id":1,"name":"Mr. Mackenzie Gulgowski","gender":"F","image":"/assets/image/cat1.jpg"}
 
 ```
@@ -821,7 +824,7 @@ $ curl 10.42.0.10:8181/users/1
 - master node에서 실행
 
 ```sh
-$ ku exec -it curltest -- curl 10.42.0.10:8181/users/1
+$ ku exec -it curltest -- curl 10.42.0.66:8181/users/1
 {"id":1,"name":"Mr. Mackenzie Gulgowski","gender":"F","image":"/assets/image/cat1.jpg"}
 ```
 
@@ -1115,7 +1118,7 @@ userlist-ingress   <none>   userlist.songlab.co.kr   172.22.253.23   80      21s
 traefik node port 를 아래에 삽입하여 curl 테스트 해보자.
 
 ```sh
-$ curl http://localhost:32423/users/1 -H "Host:userlist.songlab.co.kr"
+$ curl http://localhost:31277/users/1 -H "Host:userlist.songlab.co.kr"
 {"id":1,"name":"Sophia Zboncak","gender":"F","image":"/assets/image/cat1.jpg"}
 
 $ curl http://localhost:32423/users/1 -H "Host:userlist.songlab.co.kr"
