@@ -1911,7 +1911,7 @@ Code 503 : 5 (25.0 %)
 - 결과를 확인해보면 응답코드 **503(오류)** 응답 코드가 14회 발생했다.
 
 ```sh
-$ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 3 -qps 0 -n 30 -loglevel Warning http://httpbin:8000/get
+$ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 3 -qps 0 -n 30 -loglevel Warning http://svc-httpbin:8000/get
 
 ...
 Code 200 : 14 (46.7 %)
@@ -1928,7 +1928,7 @@ Code 503 : 16 (53.3 %)
 ```sh
 $ ku delete -f ./istio/httpbin/13.dr-httpbin.yaml
 
-$ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 3 -qps 0 -n 30 -loglevel Warning http://httpbin:8000/get
+$ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 3 -qps 0 -n 30 -loglevel Warning http://svc-httpbin:8000/get
 
 ...
 Code 200 : 30 (100.0 %)
