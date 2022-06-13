@@ -912,6 +912,8 @@ spec:
 # ingress 는 istio-ingress namespace 에서 실행해야 한다.
 $ kubectl -n istio-ingress create -f ./istio/bookinfo/15.bookinfo-ingress.yaml
 
+$ kubectl -n istio-ingress delete -f ./istio/bookinfo/15.bookinfo-ingress.yaml
+
 
 ## 확인
 ## user01 를 각자 계정명으로 변경 필요
@@ -944,7 +946,7 @@ $ curl localhost:30070/productpage -H "Host:bookinfo.user01.ktcloud.211.254.212.
 #### 초당 0.5회 call 
 
 ```sh
-$ while true; do curl -s http://bookinfo.user02.ktcloud.211.254.212.105.nip.io/productpage | grep -o "<title>.*</title>"; sleep 0.5; echo; done
+$ while true; do curl -s http://bookinfo.user01.ktcloud.211.254.212.105.nip.io/productpage | grep -o "<title>.*</title>"; sleep 0.5; echo; done
 
 ```
 
@@ -1042,6 +1044,13 @@ $ ku delete -f ./istio/bookinfo/11.bookinfo.yaml
 $ ku delete -f ./istio/bookinfo/12.bookinfo-gw-vs.yaml
 $ ku delete -f ./istio/bookinfo/13.destination-rule-all.yaml 
 $ kubectl -n istio-ingress delete -f ./istio/bookinfo/15.bookinfo-ingress.yaml
+
+
+
+ku delete vs details
+ku delete vs productpage
+ku delete vs ratings
+ku delete vs reviews
 
 
 # 확인
@@ -1688,7 +1697,7 @@ spec:
 - clean up
 
 ```sh
-$ ku delete -f 21.virtual-service-all-v1.yaml
+$ ku apply -f ./istio/bookinfo/21.virtual-service-all-v1.yaml
 ```
 
 
@@ -1806,11 +1815,11 @@ $ ku apply -f ./istio/httpbin/12.fortio-pod.yaml
 fortio 에서 *httpbin* 으로 요청. **200(정상)** 응답 코드가 리턴됨.
 
 ```sh
-$ ku exec -it fortio -c fortio -- /usr/bin/fortio curl  http://httpbin:8000/get
+$ ku exec -it fortio -c fortio -- /usr/bin/fortio curl  http://svc-httpbin:8000/get
 HTTP/1.1 200 OK
 ...
 
-$ while true; do ku exec -it fortio  -c fortio -- /usr/bin/fortio curl  http://httpbin:8000/get; sleep 0.5; echo; done
+$ while true; do ku exec -it fortio  -c fortio -- /usr/bin/fortio curl  http://svc-httpbin:8000/get; sleep 0.5; echo; done
 ```
 
 
@@ -1869,7 +1878,7 @@ Kiali 에서는 아래와 같이 circuit break 뱃지가 나타난다.
   - 결과를 확인해보면 모두 응답코드 **200(정상)** 을 리턴 한다.
 
 ```sh
-$ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 1 -qps 0 -n 10 -loglevel Warning http://httpbin:8000/get
+$ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 1 -qps 0 -n 10 -loglevel Warning http://svc-httpbin:8000/get
 
 ...
 Code 200 : 10 (100.0 %)
@@ -1885,7 +1894,7 @@ Code 200 : 10 (100.0 %)
 - 결과를 확인해보면 응답코드 **503(오류)** 응답 코드가 5회 발생했다.
 
 ```sh
-$ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 2 -qps 0 -n 20 -loglevel Warning http://httpbin:8000/get
+$ ku exec -it fortio -c fortio -- /usr/bin/fortio load -c 2 -qps 0 -n 20 -loglevel Warning http://svc-httpbin:8000/get
 
 ...
 Code 200 : 15 (75.0 %)

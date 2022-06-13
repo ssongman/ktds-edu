@@ -1,6 +1,6 @@
 
 
-# 서비스메쉬와 ArgoCD기반 CICD
+# Kubernetes,서비스메쉬, ArgoCD
 
 > ktds Container 기반 istio, argocd 교육자료
 

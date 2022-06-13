@@ -366,7 +366,7 @@ Context 'localhost:30083' updated
   - http://argocd.ktcloud.211.254.212.105.nip.io/
 
 - 계정정보
-  - admin / *************
+  - admin / *************    argo1234!
 
 
 
@@ -451,12 +451,12 @@ https://kubernetes.default.svc  in-cluster  1.23     Successful
 - guestbook
 
 ```sh
-$ argocd app create guestbook-user02 \
+$ argocd app create guestbook-user01 \
     --project default \
     --repo https://github.com/argoproj/argocd-example-apps.git \
     --path guestbook \
     --dest-server https://kubernetes.default.svc \
-    --dest-namespace user02
+    --dest-namespace user01
 ```
 
 
